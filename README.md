@@ -5,10 +5,10 @@ A modern personal portfolio for Jaskaranveer Singh, an Information Technology st
 ## Highlights
 
 - Responsive portfolio built with React, TypeScript, Vite, and Tailwind CSS
-- Animated hero section with Motion-powered entrance, scroll, hover, and card interactions
+- Animated hero section with Motion-powered entrance, scroll, hover, and project shuffle interactions
 - Interactive 3D visual powered by Spline on desktop screens
 - Dark and light theme toggle with animated switch and full-site theme transition
-- Clickable project cards that open deployed client and cafe projects
+- Shuffled project deck with clickable active cards that open deployed client and cafe projects
 - Accessible icon buttons, visible focus states, reduced-motion support, and semantic links
 - Production-ready build flow with ESLint and TypeScript checks
 
@@ -21,8 +21,6 @@ A modern personal portfolio for Jaskaranveer Singh, an Information Technology st
 | TR Enterprises | Business website for services, brand details, and customer contact paths. | [Open project](https://tr-enterpriises.vercel.app/) |
 | South Cafe Pizza | Pizza cafe website focused on menu discovery and mobile-friendly presentation. | [Open project](https://south-cafe-pizza.vercel.app/) |
 | Sentinel Pro AI | AI platform concept with modular plugin architecture and automation thinking. | Portfolio showcase |
-| Jarvis AI | AI assistant project for daily workflows, command handling, and productivity. | Portfolio showcase |
-| Helix AI | Modern AI application experiment for practical intelligence and fast prototyping. | Portfolio showcase |
 
 ## Tech Stack
 
@@ -99,7 +97,7 @@ portfolio/
 - Theme state is stored in `localStorage` using the `portfolio-theme` key.
 - Theme colors are driven by CSS variables in `src/index.css`.
 - The theme toggle uses Motion for the sliding thumb, icon crossfade, pulse feedback, and site-wide reveal animation.
-- Project cards support optional external links through the `href` field in the `projects` data array.
+- The project section uses a Motion-powered shuffle deck, with optional external links through the `href` field in the `projects` data array.
 - The Spline scene is lazy-revealed on desktop after idle time to keep the first render lighter.
 
 ## Deployment

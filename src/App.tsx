@@ -4,7 +4,6 @@ import {
   useRef,
   useState,
   type ComponentType,
-  type PointerEvent,
   type ReactNode,
 } from 'react'
 import {
@@ -19,6 +18,7 @@ import {
   Mail,
   Moon,
   Rocket,
+  Shuffle,
   Sun,
   Trophy,
   Zap,
@@ -26,8 +26,6 @@ import {
 import {
   AnimatePresence,
   motion,
-  useMotionTemplate,
-  useMotionValue,
   useReducedMotion,
   useScroll,
   useSpring,
@@ -103,36 +101,6 @@ const projects: Project[] = [
       'Self-evolving AI platform concept with modular plugin architecture, adaptability, automation, and intelligent decision-making.',
     tags: ['AI', 'Automation', 'Architecture'],
   },
-  {
-    title: 'Jarvis AI',
-    description:
-      'AI assistant project focused on useful daily workflows, command handling, productivity support, and smart automation.',
-    tags: ['Assistant', 'Python', 'AI'],
-  },
-  {
-    title: 'Helix AI',
-    description:
-      'Modern AI application experiment exploring practical intelligence, fast prototyping, and responsive user interaction.',
-    tags: ['AI Apps', 'Frontend', 'Prototype'],
-  },
-  {
-    title: 'AI-Based Development Projects',
-    description:
-      'Multiple AI-powered applications and automation tools built to solve real workflow problems and improve productivity.',
-    tags: ['Prompting', 'Tools', 'Systems'],
-  },
-  {
-    title: 'Responsive Web Projects',
-    description:
-      'Modern responsive websites using HTML, CSS, and JavaScript with a focus on usability, speed, and clean interfaces.',
-    tags: ['HTML5', 'CSS3', 'JavaScript'],
-  },
-  {
-    title: 'Freelance Client Builds',
-    description:
-      'Client-facing digital projects delivered with requirement gathering, communication, project timelines, and real-world polish.',
-    tags: ['Freelance', 'Delivery', 'Web'],
-  },
 ]
 
 const skills = [
@@ -172,7 +140,7 @@ const experiences: Experience[] = [
   {
     title: 'AI Product Builder',
     period: 'Ongoing',
-    org: 'Sentinel Pro AI, Jarvis AI, Helix AI',
+    org: 'Sentinel Pro AI and automation prototypes',
     description:
       'Designing practical AI tools, automation flows, assistant concepts, and user-facing experiments with a shipping mindset.',
   },
@@ -217,14 +185,24 @@ const container = {
 const spring: Transition = { type: 'spring', stiffness: 170, damping: 24 }
 const snappySpring: Transition = { type: 'spring', stiffness: 320, damping: 24 }
 const instant: Transition = { duration: 0 }
-const cardGlow = {
-  rest: { opacity: 0 },
-  hover: { opacity: 1 },
-}
-const tiltSpring = { stiffness: 260, damping: 30, mass: 0.45 }
 const themeToggleSpring: Transition = { type: 'spring', stiffness: 520, damping: 34, mass: 0.55 }
 const themeStorageKey = 'portfolio-theme'
 const deckPerspectiveStyle = { perspective: 1200 }
+const desktopDeckPoses = [
+  { x: 0, y: 0, scale: 1, rotate: 0, opacity: 1 },
+  { x: -230, y: 36, scale: 0.9, rotate: -7, opacity: 0.72 },
+  { x: 230, y: 54, scale: 0.88, rotate: 7, opacity: 0.68 },
+  { x: -315, y: 120, scale: 0.76, rotate: -12, opacity: 0.38 },
+  { x: 315, y: 128, scale: 0.74, rotate: 12, opacity: 0.34 },
+]
+const mobileDeckPoses = [
+  { x: 0, y: 0, scale: 1, rotate: 0, opacity: 1 },
+  { x: 0, y: 24, scale: 0.94, rotate: -4, opacity: 0.62 },
+  { x: 0, y: 48, scale: 0.88, rotate: 4, opacity: 0.34 },
+  { x: 0, y: 66, scale: 0.82, rotate: -2, opacity: 0 },
+  { x: 0, y: 66, scale: 0.82, rotate: 2, opacity: 0 },
+]
+const hiddenDeckPose = { x: 0, y: 72, scale: 0.78, rotate: 0, opacity: 0 }
 
 type IdleWindow = Window &
   typeof globalThis & {
@@ -703,90 +681,121 @@ function Hero({
 function ProjectShowcase({ transition }: { transition: Transition }) {
   return (
     <>
-      <ProjectShuffleDeck />
-      <motion.div
-        variants={container}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: '-80px' }}
-        className="hidden gap-6 md:grid md:grid-cols-2 lg:grid-cols-3"
-      >
-        {projects.map((project) => (
-          <motion.div key={project.title} variants={fadeUp} transition={transition}>
-            <ProjectCard project={project} />
-          </motion.div>
-        ))}
+      <div className="lg:hidden">
+        <ProjectShuffleDeck variant="mobile" transition={transition} />
+      </div>
+      <motion.div variants={container} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} className="hidden lg:block">
+        <motion.div variants={fadeUp} transition={transition}>
+          <ProjectShuffleDeck variant="desktop" transition={transition} />
+        </motion.div>
       </motion.div>
     </>
   )
 }
 
-function ProjectShuffleDeck() {
+function ProjectShuffleDeck({ variant, transition }: { variant: 'mobile' | 'desktop'; transition: Transition }) {
   const shouldReduceMotion = useReducedMotion()
-  const [activeIndex, setActiveIndex] = useState(0)
+  const [projectOrder, setProjectOrder] = useState(() => projects.map((_, index) => index))
   const totalProjects = projects.length
-  const visibleProjects = [0, 1, 2].map((offset) => ({
-    project: projects[(activeIndex + offset) % totalProjects],
+  const isDesktop = variant === 'desktop'
+  const deckPoses = isDesktop ? desktopDeckPoses : mobileDeckPoses
+  const visibleProjects = projectOrder.map((projectIndex, offset) => ({
+    project: projects[projectIndex],
     offset,
   }))
 
   const showPrevious = useCallback(() => {
-    setActiveIndex((current) => (current - 1 + totalProjects) % totalProjects)
-  }, [totalProjects])
+    setProjectOrder((current) => [current[current.length - 1], ...current.slice(0, -1)])
+  }, [])
 
   const showNext = useCallback(() => {
-    setActiveIndex((current) => (current + 1) % totalProjects)
-  }, [totalProjects])
+    setProjectOrder((current) => [...current.slice(1), current[0]])
+  }, [])
+
+  const showProject = useCallback((projectIndex: number) => {
+    setProjectOrder((current) => {
+      const nextIndex = current.indexOf(projectIndex)
+
+      if (nextIndex <= 0) {
+        return current
+      }
+
+      return [...current.slice(nextIndex), ...current.slice(0, nextIndex)]
+    })
+  }, [])
+
+  const shuffleProjects = useCallback(() => {
+    setProjectOrder((current) => {
+      const next = [...current]
+
+      for (let index = next.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1))
+        ;[next[index], next[swapIndex]] = [next[swapIndex], next[index]]
+      }
+
+      if (next.length > 1 && next[0] === current[0]) {
+        ;[next[0], next[1]] = [next[1], next[0]]
+      }
+
+      return next
+    })
+  }, [])
+
+  const activeProjectIndex = projectOrder[0]
+  const activeProject = projects[activeProjectIndex]
 
   return (
-    <div className="md:hidden">
-      <div className="relative mx-auto h-[360px] max-w-sm" style={deckPerspectiveStyle}>
+    <div>
+      <div
+        className={isDesktop ? 'relative mx-auto h-[430px] max-w-5xl' : 'relative mx-auto h-[360px] max-w-sm'}
+        style={deckPerspectiveStyle}
+      >
         {visibleProjects.map(({ project, offset }) => {
           const isActive = offset === 0
-          const depth = [
-            { y: 0, scale: 1, rotate: 0, opacity: 1 },
-            { y: 24, scale: 0.94, rotate: -4, opacity: 0.62 },
-            { y: 48, scale: 0.88, rotate: 4, opacity: 0.34 },
-          ][offset]
+          const pose = deckPoses[offset] ?? hiddenDeckPose
+          const zIndex = totalProjects - offset
 
           return (
             <motion.div
               key={project.title}
-              className={`absolute inset-x-0 top-0 ${isActive ? 'z-30' : offset === 1 ? 'z-20' : 'z-10'} ${
+              className={`absolute inset-x-0 top-0 mx-auto w-full max-w-sm lg:max-w-[23.5rem] xl:max-w-[26rem] ${
                 isActive ? '' : 'pointer-events-none'
               }`}
               aria-hidden={!isActive}
               initial={shouldReduceMotion ? false : { y: 42, scale: 0.9, rotate: 6, opacity: 0 }}
-              animate={shouldReduceMotion ? { opacity: isActive ? 1 : 0.35 } : depth}
-              transition={shouldReduceMotion ? instant : themeToggleSpring}
-              style={{ willChange: shouldReduceMotion ? 'auto' : 'transform, opacity' }}
+              animate={shouldReduceMotion ? { x: 0, y: offset * 10, opacity: isActive ? 1 : 0.2 } : pose}
+              transition={shouldReduceMotion ? instant : transition}
+              style={{
+                zIndex,
+                willChange: shouldReduceMotion ? 'auto' : 'transform, opacity',
+              }}
             >
-              <ProjectDeckCard project={project} isActive={isActive} />
+              <ProjectDeckCard project={project} isActive={isActive} isDesktop={isDesktop} />
             </motion.div>
           )
         })}
       </div>
 
-      <div className="mx-auto mt-5 flex max-w-sm items-center justify-between gap-4">
+      <div className="mx-auto mt-5 flex max-w-sm items-center justify-between gap-3 lg:max-w-md lg:justify-center">
         <motion.button
           type="button"
           aria-label="Previous project"
           onClick={showPrevious}
           whileTap={shouldReduceMotion ? undefined : { scale: 0.94 }}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground shadow-sm backdrop-blur transition hover:border-primary/50"
+          className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-border bg-background/70 text-foreground shadow-sm backdrop-blur transition hover:border-primary/50"
         >
           <ChevronLeft className="h-5 w-5" />
         </motion.button>
 
-        <div className="flex items-center gap-2" aria-label={`Project ${activeIndex + 1} of ${totalProjects}`}>
+        <div className="flex items-center gap-2" aria-label={`Showing ${activeProject.title}`}>
           {projects.map((project, index) => (
             <button
               key={project.title}
               type="button"
               aria-label={`Show ${project.title}`}
-              onClick={() => setActiveIndex(index)}
-              className={`h-2.5 rounded-full transition-all ${
-                index === activeIndex ? 'w-8 bg-primary' : 'w-2.5 bg-muted-foreground/35'
+              onClick={() => showProject(index)}
+              className={`h-2.5 cursor-pointer rounded-full transition-all ${
+                index === activeProjectIndex ? 'w-8 bg-primary' : 'w-2.5 bg-muted-foreground/35 hover:bg-muted-foreground/55'
               }`}
             />
           ))}
@@ -797,18 +806,39 @@ function ProjectShuffleDeck() {
           aria-label="Next project"
           onClick={showNext}
           whileTap={shouldReduceMotion ? undefined : { scale: 0.94 }}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground shadow-sm backdrop-blur transition hover:border-primary/50"
+          className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-border bg-background/70 text-foreground shadow-sm backdrop-blur transition hover:border-primary/50"
         >
           <ChevronRight className="h-5 w-5" />
+        </motion.button>
+
+        <motion.button
+          type="button"
+          aria-label="Shuffle projects"
+          onClick={shuffleProjects}
+          whileHover={shouldReduceMotion ? undefined : { y: -2, scale: 1.04 }}
+          whileTap={shouldReduceMotion ? undefined : { scale: 0.94 }}
+          transition={shouldReduceMotion ? instant : snappySpring}
+          className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-border bg-primary text-primary-foreground shadow-sm backdrop-blur transition hover:bg-primary/90"
+          style={{ willChange: shouldReduceMotion ? 'auto' : 'transform' }}
+        >
+          <Shuffle className="h-5 w-5" />
         </motion.button>
       </div>
     </div>
   )
 }
 
-function ProjectDeckCard({ project, isActive }: { project: Project; isActive: boolean }) {
+function ProjectDeckCard({
+  project,
+  isActive,
+  isDesktop,
+}: {
+  project: Project
+  isActive: boolean
+  isDesktop: boolean
+}) {
   const card = (
-    <Card className="min-h-[320px] rounded-2xl border-border/60 bg-background/80 p-6 shadow-2xl shadow-black/20 backdrop-blur-xl">
+    <Card className="min-h-[320px] rounded-2xl border-border/60 bg-background/80 p-6 shadow-2xl shadow-black/20 backdrop-blur-xl lg:min-h-[340px]">
       <div className="flex h-full flex-col justify-between gap-6">
         <div className="space-y-4">
           <div className="flex items-start justify-between gap-4">
@@ -818,8 +848,8 @@ function ProjectDeckCard({ project, isActive }: { project: Project; isActive: bo
             {project.href ? <ExternalLink className="h-5 w-5 text-muted-foreground" /> : null}
           </div>
           <div className="space-y-3">
-            <h3 className="text-2xl font-bold tracking-tight">{project.title}</h3>
-            <p className="text-sm leading-6 text-muted-foreground">{project.description}</p>
+            <h3 className={isDesktop ? 'text-3xl font-bold tracking-tight' : 'text-2xl font-bold tracking-tight'}>{project.title}</h3>
+            <p className="text-sm leading-6 text-muted-foreground lg:text-base">{project.description}</p>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -893,150 +923,6 @@ function Section({
         {children}
       </div>
     </section>
-  )
-}
-
-function ProjectCard({ project }: { project: Project }) {
-  const shouldReduceMotion = useReducedMotion()
-  const boundsRef = useRef<DOMRect | null>(null)
-  const pointerStateRef = useRef<{ x: number; y: number; width: number; height: number } | null>(null)
-  const frameRef = useRef<number | null>(null)
-  const tiltX = useMotionValue(0)
-  const tiltY = useMotionValue(0)
-  const glowX = useMotionValue(0)
-  const glowY = useMotionValue(0)
-  const smoothTiltX = useSpring(tiltX, tiltSpring)
-  const smoothTiltY = useSpring(tiltY, tiltSpring)
-  const rotateX = useTransform(smoothTiltY, [-0.5, 0.5], [8, -8])
-  const rotateY = useTransform(smoothTiltX, [-0.5, 0.5], [-8, 8])
-  const glowBackground = useMotionTemplate`radial-gradient(420px circle at ${glowX}px ${glowY}px, rgba(255,255,255,0.18), transparent 42%)`
-
-  const flushPointerFrame = useCallback(() => {
-    const pointer = pointerStateRef.current
-    frameRef.current = null
-
-    if (!pointer) {
-      return
-    }
-
-    glowX.set(pointer.x)
-    glowY.set(pointer.y)
-    tiltX.set(pointer.x / pointer.width - 0.5)
-    tiltY.set(pointer.y / pointer.height - 0.5)
-  }, [glowX, glowY, tiltX, tiltY])
-
-  useEffect(() => {
-    return () => {
-      if (frameRef.current !== null) {
-        window.cancelAnimationFrame(frameRef.current)
-      }
-    }
-  }, [])
-
-  const handlePointerEnter = useCallback((event: PointerEvent<HTMLDivElement>) => {
-    boundsRef.current = event.currentTarget.getBoundingClientRect()
-  }, [])
-
-  const handlePointerMove = useCallback((event: PointerEvent<HTMLDivElement>) => {
-    if (shouldReduceMotion) {
-      return
-    }
-
-    const bounds = boundsRef.current ?? event.currentTarget.getBoundingClientRect()
-    const x = event.clientX - bounds.left
-    const y = event.clientY - bounds.top
-
-    pointerStateRef.current = {
-      x,
-      y,
-      width: Math.max(bounds.width, 1),
-      height: Math.max(bounds.height, 1),
-    }
-
-    if (frameRef.current === null) {
-      frameRef.current = window.requestAnimationFrame(flushPointerFrame)
-    }
-  }, [flushPointerFrame, shouldReduceMotion])
-
-  const handlePointerLeave = useCallback(() => {
-    boundsRef.current = null
-    pointerStateRef.current = null
-
-    if (frameRef.current !== null) {
-      window.cancelAnimationFrame(frameRef.current)
-      frameRef.current = null
-    }
-
-    tiltX.set(0)
-    tiltY.set(0)
-  }, [tiltX, tiltY])
-
-  const card = (
-    <Card className="relative h-full overflow-hidden rounded-xl border-border/50 bg-background/50 p-6 shadow-sm backdrop-blur-xl transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-2xl group-hover:shadow-white/10">
-      <motion.div className="pointer-events-none absolute inset-0" variants={cardGlow} style={{ background: glowBackground }} />
-      <motion.div
-        className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent"
-        variants={cardGlow}
-      />
-      <div className="relative z-10 space-y-4 [transform:translateZ(26px)]">
-        <div className="flex items-start justify-between">
-          <motion.div variants={cardGlow}>
-            <CodeXml className="h-8 w-8 text-primary" />
-          </motion.div>
-          {project.href ? (
-            <motion.div variants={{ rest: { x: 0, y: 0 }, hover: { x: 4, y: -4 } }} transition={snappySpring}>
-              <ExternalLink className="h-5 w-5 text-muted-foreground transition group-hover:text-primary" />
-            </motion.div>
-          ) : null}
-        </div>
-        <h3 className="text-xl font-semibold">{project.title}</h3>
-        <p className="leading-relaxed text-muted-foreground">{project.description}</p>
-        <div className="flex flex-wrap gap-2">
-          {project.tags.map((tag) => (
-            <motion.span
-              key={tag}
-              variants={{ rest: { y: 0 }, hover: { y: -2 } }}
-              transition={snappySpring}
-              className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary"
-            >
-              {tag}
-            </motion.span>
-          ))}
-        </div>
-      </div>
-    </Card>
-  )
-
-  return (
-    <motion.div
-      className="group h-full [perspective:1000px]"
-      initial="rest"
-      whileHover="hover"
-      onPointerEnter={handlePointerEnter}
-      onPointerMove={handlePointerMove}
-      onPointerLeave={handlePointerLeave}
-      style={{
-        rotateX: shouldReduceMotion ? 0 : rotateX,
-        rotateY: shouldReduceMotion ? 0 : rotateY,
-        transformStyle: 'preserve-3d',
-        willChange: shouldReduceMotion ? 'auto' : 'transform',
-      }}
-      transition={snappySpring}
-    >
-      {project.href ? (
-        <a
-          href={project.href}
-          target="_blank"
-          rel="noreferrer"
-          aria-label={`Open ${project.title}`}
-          className="block h-full rounded-xl focus-visible:outline-none"
-        >
-          {card}
-        </a>
-      ) : (
-        card
-      )}
-    </motion.div>
   )
 }
 
