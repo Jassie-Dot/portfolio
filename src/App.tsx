@@ -11,6 +11,8 @@ import {
   ArrowRight,
   Award,
   Briefcase,
+  ChevronLeft,
+  ChevronRight,
   CodeXml,
   ExternalLink,
   GitBranch,
@@ -34,6 +36,7 @@ import {
 } from 'motion/react'
 
 import './App.css'
+import heroLayer from '@/assets/hero.png'
 import { Card } from '@/components/ui/card'
 import { SplineScene } from '@/components/ui/splite'
 
@@ -221,6 +224,7 @@ const cardGlow = {
 const tiltSpring = { stiffness: 260, damping: 30, mass: 0.45 }
 const themeToggleSpring: Transition = { type: 'spring', stiffness: 520, damping: 34, mass: 0.55 }
 const themeStorageKey = 'portfolio-theme'
+const deckPerspectiveStyle = { perspective: 1200 }
 
 type IdleWindow = Window &
   typeof globalThis & {
@@ -294,19 +298,7 @@ function App() {
           description="A selection of my recent work showcasing AI systems, web development, and real-world delivery."
           muted
         >
-          <motion.div
-            variants={container}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-80px' }}
-            className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
-          >
-            {projects.map((project) => (
-              <motion.div key={project.title} variants={fadeUp} transition={transition}>
-                <ProjectCard project={project} />
-              </motion.div>
-            ))}
-          </motion.div>
+          <ProjectShowcase transition={transition} />
         </Section>
 
         <Section
@@ -507,12 +499,11 @@ function ScrollProgress() {
   )
 }
 
-function useDesktopSplineReady() {
+function useResponsiveSplineReady() {
   const [isReady, setIsReady] = useState(false)
 
   useEffect(() => {
     const win = window as IdleWindow
-    const media = window.matchMedia('(min-width: 1024px)')
     let timer: number | undefined
     let idleId: number | undefined
 
@@ -528,11 +519,6 @@ function useDesktopSplineReady() {
     const schedule = () => {
       cancelPending()
 
-      if (!media.matches) {
-        setIsReady(false)
-        return
-      }
-
       const revealSpline = () => {
         idleId = undefined
         setIsReady(true)
@@ -547,11 +533,9 @@ function useDesktopSplineReady() {
     }
 
     schedule()
-    media.addEventListener('change', schedule)
 
     return () => {
       cancelPending()
-      media.removeEventListener('change', schedule)
     }
   }, [])
 
@@ -559,9 +543,28 @@ function useDesktopSplineReady() {
 }
 
 function SplinePlaceholder() {
+  const shouldReduceMotion = useReducedMotion()
+
   return (
-    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-white/8 via-white/[0.03] to-transparent">
-      <div className="h-16 w-16 rounded-full border border-white/15 border-t-white/70" />
+    <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-gradient-to-br from-white/8 via-white/[0.03] to-transparent">
+      <motion.div
+        className="absolute h-40 w-40 rounded-full border border-primary/10"
+        animate={shouldReduceMotion ? undefined : { rotate: 360 }}
+        transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
+      />
+      <motion.div
+        className="absolute h-24 w-24 rounded-full border border-primary/20"
+        animate={shouldReduceMotion ? undefined : { rotate: -360 }}
+        transition={{ duration: 14, repeat: Infinity, ease: 'linear' }}
+      />
+      <motion.img
+        src={heroLayer}
+        alt=""
+        aria-hidden="true"
+        className="relative z-10 w-40 max-w-[60%] drop-shadow-[0_24px_44px_rgba(0,0,0,0.45)] sm:w-48"
+        animate={shouldReduceMotion ? undefined : { y: [-6, 6, -6], rotate: [-2, 2, -2] }}
+        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+      />
     </div>
   )
 }
@@ -574,7 +577,7 @@ function Hero({
   shouldReduceMotion: boolean
 }) {
   const heroRef = useRef<HTMLElement>(null)
-  const canLoadSpline = useDesktopSplineReady()
+  const canLoadSpline = useResponsiveSplineReady()
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
   const textY = useTransform(scrollYProgress, [0, 1], [0, shouldReduceMotion ? 0 : -76])
   const visualY = useTransform(scrollYProgress, [0, 1], [0, shouldReduceMotion ? 0 : 110])
@@ -600,12 +603,12 @@ function Hero({
       </div>
 
       <div className="container relative z-10 mx-auto px-6 py-20">
-        <div className="grid items-center gap-12 lg:grid-cols-2">
+        <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
           <motion.div
             variants={container}
             initial="hidden"
             animate="visible"
-            className="space-y-8"
+            className="order-2 space-y-6 lg:order-1 lg:space-y-8"
             style={{ y: textY, opacity: heroOpacity, willChange: 'transform, opacity' }}
           >
             <motion.div variants={fadeUp} transition={transition}>
@@ -613,7 +616,7 @@ function Hero({
             </motion.div>
 
             <motion.div variants={fadeUp} transition={transition} className="space-y-4">
-              <motion.h1 className="text-5xl font-black tracking-tight md:text-7xl" variants={container}>
+              <motion.h1 className="text-4xl font-black tracking-tight sm:text-5xl md:text-7xl" variants={container}>
                 <motion.span variants={fadeUp} transition={transition} className="block text-muted-foreground">
                   Hi, I&apos;m
                 </motion.span>
@@ -625,7 +628,7 @@ function Hero({
                   Jaskaranveer Singh
                 </motion.span>
               </motion.h1>
-              <motion.p variants={fadeUp} transition={transition} className="text-2xl font-light text-muted-foreground md:text-3xl">
+              <motion.p variants={fadeUp} transition={transition} className="text-xl font-light text-muted-foreground sm:text-2xl md:text-3xl">
                 AI Developer & Creative Technologist
               </motion.p>
               <motion.p variants={fadeUp} transition={transition} className="max-w-xl text-lg leading-relaxed text-muted-foreground">
@@ -671,12 +674,16 @@ function Hero({
             initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.92, rotateY: -8 }}
             animate={shouldReduceMotion ? undefined : { opacity: 1, scale: 1, rotateY: 0 }}
             transition={transition}
-            className="relative hidden h-[600px] lg:block"
+            className="order-1 relative h-[250px] sm:h-[340px] lg:order-2 lg:h-[600px]"
             style={{ y: visualY, willChange: 'transform, opacity' }}
             whileHover={shouldReduceMotion ? undefined : { scale: 1.015, rotateX: 1.5, rotateY: -1.5 }}
           >
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/20 to-transparent blur-3xl" />
-            <div className="relative h-full overflow-hidden rounded-3xl border border-border/70 bg-background/60 shadow-2xl shadow-black/60 backdrop-blur-xl">
+            <div className="absolute inset-4 rounded-3xl bg-gradient-to-br from-primary/20 to-transparent blur-3xl lg:inset-0" />
+            <div
+              role="img"
+              aria-label="Interactive AI robot scene"
+              className="relative h-full overflow-hidden rounded-3xl border border-border/70 bg-background/60 shadow-2xl shadow-black/40 backdrop-blur-xl lg:shadow-black/60"
+            >
               {canLoadSpline ? (
                 <SplineScene
                   scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
@@ -690,6 +697,157 @@ function Hero({
         </div>
       </div>
     </section>
+  )
+}
+
+function ProjectShowcase({ transition }: { transition: Transition }) {
+  return (
+    <>
+      <ProjectShuffleDeck />
+      <motion.div
+        variants={container}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: '-80px' }}
+        className="hidden gap-6 md:grid md:grid-cols-2 lg:grid-cols-3"
+      >
+        {projects.map((project) => (
+          <motion.div key={project.title} variants={fadeUp} transition={transition}>
+            <ProjectCard project={project} />
+          </motion.div>
+        ))}
+      </motion.div>
+    </>
+  )
+}
+
+function ProjectShuffleDeck() {
+  const shouldReduceMotion = useReducedMotion()
+  const [activeIndex, setActiveIndex] = useState(0)
+  const totalProjects = projects.length
+  const visibleProjects = [0, 1, 2].map((offset) => ({
+    project: projects[(activeIndex + offset) % totalProjects],
+    offset,
+  }))
+
+  const showPrevious = useCallback(() => {
+    setActiveIndex((current) => (current - 1 + totalProjects) % totalProjects)
+  }, [totalProjects])
+
+  const showNext = useCallback(() => {
+    setActiveIndex((current) => (current + 1) % totalProjects)
+  }, [totalProjects])
+
+  return (
+    <div className="md:hidden">
+      <div className="relative mx-auto h-[360px] max-w-sm" style={deckPerspectiveStyle}>
+        {visibleProjects.map(({ project, offset }) => {
+          const isActive = offset === 0
+          const depth = [
+            { y: 0, scale: 1, rotate: 0, opacity: 1 },
+            { y: 24, scale: 0.94, rotate: -4, opacity: 0.62 },
+            { y: 48, scale: 0.88, rotate: 4, opacity: 0.34 },
+          ][offset]
+
+          return (
+            <motion.div
+              key={project.title}
+              className={`absolute inset-x-0 top-0 ${isActive ? 'z-30' : offset === 1 ? 'z-20' : 'z-10'} ${
+                isActive ? '' : 'pointer-events-none'
+              }`}
+              aria-hidden={!isActive}
+              initial={shouldReduceMotion ? false : { y: 42, scale: 0.9, rotate: 6, opacity: 0 }}
+              animate={shouldReduceMotion ? { opacity: isActive ? 1 : 0.35 } : depth}
+              transition={shouldReduceMotion ? instant : themeToggleSpring}
+              style={{ willChange: shouldReduceMotion ? 'auto' : 'transform, opacity' }}
+            >
+              <ProjectDeckCard project={project} isActive={isActive} />
+            </motion.div>
+          )
+        })}
+      </div>
+
+      <div className="mx-auto mt-5 flex max-w-sm items-center justify-between gap-4">
+        <motion.button
+          type="button"
+          aria-label="Previous project"
+          onClick={showPrevious}
+          whileTap={shouldReduceMotion ? undefined : { scale: 0.94 }}
+          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground shadow-sm backdrop-blur transition hover:border-primary/50"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </motion.button>
+
+        <div className="flex items-center gap-2" aria-label={`Project ${activeIndex + 1} of ${totalProjects}`}>
+          {projects.map((project, index) => (
+            <button
+              key={project.title}
+              type="button"
+              aria-label={`Show ${project.title}`}
+              onClick={() => setActiveIndex(index)}
+              className={`h-2.5 rounded-full transition-all ${
+                index === activeIndex ? 'w-8 bg-primary' : 'w-2.5 bg-muted-foreground/35'
+              }`}
+            />
+          ))}
+        </div>
+
+        <motion.button
+          type="button"
+          aria-label="Next project"
+          onClick={showNext}
+          whileTap={shouldReduceMotion ? undefined : { scale: 0.94 }}
+          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground shadow-sm backdrop-blur transition hover:border-primary/50"
+        >
+          <ChevronRight className="h-5 w-5" />
+        </motion.button>
+      </div>
+    </div>
+  )
+}
+
+function ProjectDeckCard({ project, isActive }: { project: Project; isActive: boolean }) {
+  const card = (
+    <Card className="min-h-[320px] rounded-2xl border-border/60 bg-background/80 p-6 shadow-2xl shadow-black/20 backdrop-blur-xl">
+      <div className="flex h-full flex-col justify-between gap-6">
+        <div className="space-y-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+              <CodeXml className="h-6 w-6" />
+            </div>
+            {project.href ? <ExternalLink className="h-5 w-5 text-muted-foreground" /> : null}
+          </div>
+          <div className="space-y-3">
+            <h3 className="text-2xl font-bold tracking-tight">{project.title}</h3>
+            <p className="text-sm leading-6 text-muted-foreground">{project.description}</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {project.tags.map((tag) => (
+            <span key={tag} className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+              {tag}
+            </span>
+          ))}
+        </div>
+      </div>
+    </Card>
+  )
+
+  if (!project.href) {
+    return card
+  }
+
+  return (
+    <a
+      href={project.href}
+      target="_blank"
+      rel="noreferrer"
+      aria-label={`Open ${project.title}`}
+      tabIndex={isActive ? undefined : -1}
+      className="block rounded-2xl focus-visible:outline-none"
+    >
+      {card}
+    </a>
   )
 }
 
