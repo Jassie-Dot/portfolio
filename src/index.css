@@ -20,6 +20,7 @@
   --muted-foreground: #a3a3a3;
   --border: #2a2a2a;
   --ring: #ffffff;
+  --theme-toggle-glow: rgba(255, 255, 255, 0.18);
   font-family:
     ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   font-synthesis: none;
@@ -39,6 +40,7 @@ html[data-theme='light'] {
   --muted-foreground: #64748b;
   --border: #cbd5e1;
   --ring: #111827;
+  --theme-toggle-glow: rgba(17, 24, 39, 0.14);
 }
 
 * {
@@ -71,6 +73,39 @@ html[data-theme='light'] body {
 button,
 a {
   letter-spacing: 0;
+}
+
+.theme-toggle {
+  --toggle-glow-x: 82%;
+  isolation: isolate;
+}
+
+.theme-toggle::before {
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: 9999px;
+  background: radial-gradient(circle at var(--toggle-glow-x) 50%, var(--theme-toggle-glow), transparent 58%);
+  content: "";
+}
+
+.theme-switch-reveal[data-reveal-theme='dark'] {
+  background: linear-gradient(135deg, #020202 0%, #090909 48%, #050505 100%);
+}
+
+.theme-switch-reveal[data-reveal-theme='light'] {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 48%, #eef2f7 100%);
+}
+
+.theme-transition-active *,
+.theme-transition-active body {
+  transition-duration: 260ms;
+  transition-property: background-color, border-color, box-shadow, color, fill, stroke, text-shadow;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.theme-transition-active .theme-switch-reveal {
+  transition: none;
 }
 
 button:focus-visible,

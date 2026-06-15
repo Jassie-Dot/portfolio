@@ -22,6 +22,7 @@ import {
   Zap,
 } from 'lucide-react'
 import {
+  AnimatePresence,
   motion,
   useMotionTemplate,
   useMotionValue,
@@ -58,6 +59,11 @@ type Hackathon = {
 }
 
 type Theme = 'dark' | 'light'
+
+type ThemeTransitionState = {
+  id: number
+  from: Theme
+}
 
 const projects: Project[] = [
   {
@@ -213,6 +219,7 @@ const cardGlow = {
   hover: { opacity: 1 },
 }
 const tiltSpring = { stiffness: 260, damping: 30, mass: 0.45 }
+const themeToggleSpring: Transition = { type: 'spring', stiffness: 520, damping: 34, mass: 0.55 }
 const themeStorageKey = 'portfolio-theme'
 
 type IdleWindow = Window &
@@ -225,6 +232,7 @@ function App() {
   const shouldReduceMotion = useReducedMotion()
   const transition = shouldReduceMotion ? instant : spring
   const [theme, setTheme] = useState<Theme>(() => getInitialTheme())
+  const [themeTransition, setThemeTransition] = useState<ThemeTransitionState | null>(null)
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -232,10 +240,51 @@ function App() {
     window.localStorage.setItem(themeStorageKey, theme)
   }, [theme])
 
+  useEffect(() => {
+    document.documentElement.classList.toggle(
+      'theme-transition-active',
+      Boolean(themeTransition) && !shouldReduceMotion,
+    )
+
+    return () => {
+      document.documentElement.classList.remove('theme-transition-active')
+    }
+  }, [shouldReduceMotion, themeTransition])
+
+  useEffect(() => {
+    if (!themeTransition || shouldReduceMotion) {
+      return
+    }
+
+    const timeout = window.setTimeout(() => {
+      setThemeTransition(null)
+    }, 720)
+
+    return () => window.clearTimeout(timeout)
+  }, [shouldReduceMotion, themeTransition])
+
+  const handleThemeToggle = useCallback(() => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark'
+
+    if (!shouldReduceMotion) {
+      setThemeTransition((current) => ({
+        id: (current?.id ?? 0) + 1,
+        from: theme,
+      }))
+    }
+
+    setTheme(nextTheme)
+  }, [shouldReduceMotion, theme])
+
+  const handleThemeTransitionComplete = useCallback((transitionId: number) => {
+    setThemeTransition((current) => (current?.id === transitionId ? null : current))
+  }, [])
+
   return (
     <>
       <ScrollProgress />
-      <ThemeToggle theme={theme} onToggle={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))} />
+      <ThemeSwitchTransition transitionState={themeTransition} onComplete={handleThemeTransitionComplete} />
+      <ThemeToggle theme={theme} onToggle={handleThemeToggle} />
       <main className="min-h-screen w-full overflow-hidden bg-background text-foreground">
         <Hero transition={transition} shouldReduceMotion={Boolean(shouldReduceMotion)} />
 
@@ -340,24 +389,102 @@ function getInitialTheme(): Theme {
   return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
 }
 
+function ThemeSwitchTransition({
+  transitionState,
+  onComplete,
+}: {
+  transitionState: ThemeTransitionState | null
+  onComplete: (transitionId: number) => void
+}) {
+  const shouldReduceMotion = useReducedMotion()
+
+  if (!transitionState || shouldReduceMotion) {
+    return null
+  }
+
+  return (
+    <AnimatePresence initial={false}>
+      <motion.div
+        key={transitionState.id}
+        aria-hidden="true"
+        data-reveal-theme={transitionState.from}
+        className="theme-switch-reveal pointer-events-none fixed inset-0 z-[55] origin-top-right"
+        initial={{ opacity: 1, scaleX: 1 }}
+        animate={{ opacity: [1, 0.96, 0], scaleX: 0 }}
+        exit={{ opacity: 0 }}
+        transition={{
+          opacity: { duration: 0.5, times: [0, 0.72, 1], ease: 'easeOut' },
+          scaleX: { duration: 0.52, ease: [0.22, 1, 0.36, 1] },
+        }}
+        onAnimationComplete={() => onComplete(transitionState.id)}
+        style={{ willChange: 'opacity, transform' }}
+      />
+    </AnimatePresence>
+  )
+}
+
 function ThemeToggle({ theme, onToggle }: { theme: Theme; onToggle: () => void }) {
   const shouldReduceMotion = useReducedMotion()
   const nextTheme = theme === 'dark' ? 'light' : 'dark'
-  const Icon = theme === 'dark' ? Sun : Moon
+  const isLight = theme === 'light'
+  const Icon = isLight ? Sun : Moon
 
   return (
     <motion.button
       type="button"
       onClick={onToggle}
+      aria-pressed={isLight}
       aria-label={`Switch to ${nextTheme} mode`}
       title={`Switch to ${nextTheme} mode`}
-      whileHover={shouldReduceMotion ? undefined : { y: -2, scale: 1.05 }}
-      whileTap={shouldReduceMotion ? undefined : { scale: 0.95 }}
-      transition={snappySpring}
-      className="fixed right-4 top-4 z-[60] inline-flex h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-background/80 text-foreground shadow-lg shadow-black/10 backdrop-blur-xl transition hover:border-primary/60 hover:bg-muted"
+      initial={false}
+      animate={{ '--toggle-glow-x': isLight ? '18%' : '82%' } as Record<string, string>}
+      whileHover={shouldReduceMotion ? undefined : { y: -2, scale: 1.03 }}
+      whileTap={shouldReduceMotion ? undefined : { scale: 0.97 }}
+      transition={shouldReduceMotion ? instant : snappySpring}
+      className="theme-toggle fixed right-4 top-4 z-[60] inline-flex h-11 w-20 cursor-pointer items-center rounded-full border border-border/70 bg-background/80 p-1 text-foreground shadow-lg shadow-black/10 backdrop-blur-xl transition hover:border-primary/60"
       style={{ willChange: shouldReduceMotion ? 'auto' : 'transform' }}
     >
-      <Icon className="h-5 w-5" />
+      <span className="pointer-events-none absolute inset-1 rounded-full bg-muted/50" />
+      <Sun className="pointer-events-none absolute left-3 h-4 w-4 text-primary" aria-hidden="true" />
+      <Moon className="pointer-events-none absolute right-3 h-4 w-4 text-primary" aria-hidden="true" />
+      <motion.span
+        className="relative z-10 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md"
+        initial={false}
+        animate={{
+          x: isLight ? 0 : 36,
+          rotate: shouldReduceMotion ? 0 : isLight ? 0 : 180,
+        }}
+        transition={shouldReduceMotion ? instant : themeToggleSpring}
+        style={{ willChange: shouldReduceMotion ? 'auto' : 'transform' }}
+      >
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.span
+            key={theme}
+            initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.55, rotate: isLight ? -45 : 45 }}
+            animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1, rotate: 0 }}
+            exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.55, rotate: isLight ? 45 : -45 }}
+            transition={shouldReduceMotion ? instant : { duration: 0.18, ease: 'easeOut' }}
+            className="flex items-center justify-center"
+            style={{ willChange: shouldReduceMotion ? 'auto' : 'opacity, transform' }}
+          >
+            <Icon className="h-4 w-4" aria-hidden="true" />
+          </motion.span>
+        </AnimatePresence>
+      </motion.span>
+      <AnimatePresence initial={false}>
+        {!shouldReduceMotion ? (
+          <motion.span
+            key={theme}
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 rounded-full border border-primary/30"
+            initial={{ opacity: 0.45, scale: 0.82 }}
+            animate={{ opacity: 0, scale: 1.28 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.34, ease: 'easeOut' }}
+            style={{ willChange: 'opacity, transform' }}
+          />
+        ) : null}
+      </AnimatePresence>
       <span className="sr-only">Switch to {nextTheme} mode</span>
     </motion.button>
   )
