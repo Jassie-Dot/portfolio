@@ -21,6 +21,10 @@
   --border: #2a2a2a;
   --ring: #ffffff;
   --theme-toggle-glow: rgba(255, 255, 255, 0.18);
+  --shooting-star-color: rgba(255, 255, 255, 0.72);
+  --shooting-star-tail: rgba(255, 255, 255, 0.18);
+  --shooting-star-glow: rgba(255, 255, 255, 0.4);
+  --shooting-star-haze: rgba(255, 255, 255, 0.035);
   font-family:
     ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   font-synthesis: none;
@@ -41,6 +45,10 @@ html[data-theme='light'] {
   --border: #cbd5e1;
   --ring: #111827;
   --theme-toggle-glow: rgba(17, 24, 39, 0.14);
+  --shooting-star-color: rgba(15, 23, 42, 0.38);
+  --shooting-star-tail: rgba(37, 99, 235, 0.16);
+  --shooting-star-glow: rgba(37, 99, 235, 0.2);
+  --shooting-star-haze: rgba(37, 99, 235, 0.07);
 }
 
 * {
@@ -106,6 +114,34 @@ a {
 
 .theme-transition-active .theme-switch-reveal {
   transition: none;
+}
+
+.shooting-star {
+  position: absolute;
+  height: 1px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--shooting-star-color) 24%,
+    var(--shooting-star-tail) 62%,
+    transparent 100%
+  );
+  box-shadow: 0 0 16px var(--shooting-star-glow);
+  transform-origin: left center;
+}
+
+.shooting-star::after {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 3px;
+  width: 3px;
+  border-radius: 9999px;
+  background: var(--shooting-star-color);
+  box-shadow: 0 0 14px var(--shooting-star-glow);
+  content: "";
+  transform: translateY(-50%);
 }
 
 button:focus-visible,

@@ -8,6 +8,7 @@ A modern personal portfolio for Jaskaranveer Singh, an Information Technology st
 - Animated hero section with Motion-powered entrance, scroll, hover, and project shuffle interactions
 - Interactive 3D visual powered by Spline on desktop screens
 - Dark and light theme toggle with animated switch and full-site theme transition
+- Subtle Motion-powered shooting star background with reduced-motion support
 - Shuffled project deck with clickable active cards that open deployed client and cafe projects
 - Live preview section for browsing deployed project links inside responsive browser frames
 - Accessible icon buttons, visible focus states, reduced-motion support, and semantic links

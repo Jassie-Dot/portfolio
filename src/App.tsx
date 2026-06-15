@@ -3,6 +3,7 @@ import {
   useEffect,
   useRef,
   useState,
+  type CSSProperties,
   type ComponentType,
   type ReactNode,
 } from 'react'
@@ -216,6 +217,13 @@ const mobileDeckPoses = [
   { x: 0, y: 66, scale: 0.82, rotate: 2, opacity: 0 },
 ]
 const hiddenDeckPose = { x: 0, y: 72, scale: 0.78, rotate: 0, opacity: 0 }
+const shootingStars = [
+  { id: 'upper-east', top: '12%', left: '78%', width: 156, travel: 280, delay: 0.8, duration: 3.7, repeatDelay: 8.8 },
+  { id: 'hero-cross', top: '26%', left: '91%', width: 118, travel: 230, delay: 4.6, duration: 3.2, repeatDelay: 10.5 },
+  { id: 'midnight-line', top: '44%', left: '72%', width: 142, travel: 260, delay: 8.4, duration: 3.5, repeatDelay: 9.6 },
+  { id: 'lower-west', top: '67%', left: '88%', width: 132, travel: 250, delay: 12.2, duration: 3.4, repeatDelay: 11.2 },
+  { id: 'footer-drift', top: '82%', left: '66%', width: 108, travel: 210, delay: 16.8, duration: 3.1, repeatDelay: 12.4 },
+]
 
 type IdleWindow = Window &
   typeof globalThis & {
@@ -280,87 +288,90 @@ function App() {
       <ScrollProgress />
       <ThemeSwitchTransition transitionState={themeTransition} onComplete={handleThemeTransitionComplete} />
       <ThemeToggle theme={theme} onToggle={handleThemeToggle} />
-      <main className="min-h-screen w-full overflow-hidden bg-background text-foreground">
-        <Hero transition={transition} shouldReduceMotion={Boolean(shouldReduceMotion)} />
+      <main className="relative isolate min-h-screen w-full overflow-hidden bg-background text-foreground">
+        <ShootingStars />
+        <div className="relative z-10">
+          <Hero transition={transition} shouldReduceMotion={Boolean(shouldReduceMotion)} />
 
-        <Section
-          eyebrow="Featured Work"
-          title="Projects"
-          description="A selection of my recent work showcasing AI systems, web development, and real-world delivery."
-          muted
-        >
-          <ProjectShowcase transition={transition} />
-        </Section>
-
-        <Section
-          eyebrow="Live Builds"
-          title="Live Preview"
-          description="Interactive windows into deployed work, with quick project context and direct launch links."
-        >
-          <LiveProjectPreview transition={transition} />
-        </Section>
-
-        <Section
-          eyebrow="Technical Expertise"
-          title="Skills & Technologies"
-          description="Comfortable across programming, frontend development, AI workflows, automation, and shipping tools."
-        >
-          <motion.div
-            variants={container}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-80px' }}
-            className="mx-auto flex max-w-5xl flex-wrap justify-center gap-3"
+          <Section
+            eyebrow="Featured Work"
+            title="Projects"
+            description="A selection of my recent work showcasing AI systems, web development, and real-world delivery."
+            muted
           >
-            {skills.map((skill) => (
-              <motion.span
-                key={skill}
-                variants={fadeUp}
-                transition={transition}
-                whileHover={shouldReduceMotion ? undefined : { y: -4, scale: 1.04 }}
-                whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
-                className="rounded-full border border-border/80 bg-muted/40 px-4 py-2 text-sm font-medium shadow-sm backdrop-blur-xl transition hover:border-primary/40 hover:bg-primary/10"
-              >
-                {skill}
-              </motion.span>
-            ))}
-          </motion.div>
-        </Section>
+            <ProjectShowcase transition={transition} />
+          </Section>
 
-        <Section
-          eyebrow="Career Journey"
-          title="Experience"
-          description="Professional experience building practical solutions and learning fast through real projects."
-          muted
-        >
-          <div className="mx-auto max-w-4xl space-y-6">
-            {experiences.map((item, index) => (
-              <motion.div
-                key={item.title}
-                initial={shouldReduceMotion ? false : { opacity: 0, x: index % 2 === 0 ? -34 : 34 }}
-                whileInView={shouldReduceMotion ? undefined : { opacity: 1, x: 0 }}
-                transition={transition}
-                viewport={{ once: true, margin: '-80px' }}
-              >
-                <TimelineItem item={item} />
-              </motion.div>
-            ))}
-          </div>
-        </Section>
+          <Section
+            eyebrow="Live Builds"
+            title="Live Preview"
+            description="Interactive windows into deployed work, with quick project context and direct launch links."
+          >
+            <LiveProjectPreview transition={transition} />
+          </Section>
 
-        <Section
-          eyebrow="Achievements"
-          title="Hackathon Wins"
-          description="Recognition for innovation, execution, and problem-solving in competitive environments."
-        >
-          <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
-            {hackathons.map((hackathon) => (
-              <HackathonCard key={`${hackathon.title}-${hackathon.event}`} hackathon={hackathon} />
-            ))}
-          </div>
-        </Section>
+          <Section
+            eyebrow="Technical Expertise"
+            title="Skills & Technologies"
+            description="Comfortable across programming, frontend development, AI workflows, automation, and shipping tools."
+          >
+            <motion.div
+              variants={container}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: '-80px' }}
+              className="mx-auto flex max-w-5xl flex-wrap justify-center gap-3"
+            >
+              {skills.map((skill) => (
+                <motion.span
+                  key={skill}
+                  variants={fadeUp}
+                  transition={transition}
+                  whileHover={shouldReduceMotion ? undefined : { y: -4, scale: 1.04 }}
+                  whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
+                  className="rounded-full border border-border/80 bg-muted/40 px-4 py-2 text-sm font-medium shadow-sm backdrop-blur-xl transition hover:border-primary/40 hover:bg-primary/10"
+                >
+                  {skill}
+                </motion.span>
+              ))}
+            </motion.div>
+          </Section>
 
-        <Contact />
+          <Section
+            eyebrow="Career Journey"
+            title="Experience"
+            description="Professional experience building practical solutions and learning fast through real projects."
+            muted
+          >
+            <div className="mx-auto max-w-4xl space-y-6">
+              {experiences.map((item, index) => (
+                <motion.div
+                  key={item.title}
+                  initial={shouldReduceMotion ? false : { opacity: 0, x: index % 2 === 0 ? -34 : 34 }}
+                  whileInView={shouldReduceMotion ? undefined : { opacity: 1, x: 0 }}
+                  transition={transition}
+                  viewport={{ once: true, margin: '-80px' }}
+                >
+                  <TimelineItem item={item} />
+                </motion.div>
+              ))}
+            </div>
+          </Section>
+
+          <Section
+            eyebrow="Achievements"
+            title="Hackathon Wins"
+            description="Recognition for innovation, execution, and problem-solving in competitive environments."
+          >
+            <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
+              {hackathons.map((hackathon) => (
+                <HackathonCard key={`${hackathon.title}-${hackathon.event}`} hackathon={hackathon} />
+              ))}
+            </div>
+          </Section>
+
+          <Contact />
+        </div>
       </main>
     </>
   )
@@ -499,6 +510,64 @@ function ScrollProgress() {
       className="fixed left-0 top-0 z-50 h-1 w-full origin-left bg-primary shadow-[0_0_28px_rgba(255,255,255,0.45)]"
       style={{ scaleX, willChange: 'transform' }}
     />
+  )
+}
+
+function ShootingStars() {
+  const shouldReduceMotion = useReducedMotion()
+
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-0 z-0 overflow-hidden opacity-80"
+    >
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_12%,var(--shooting-star-haze),transparent_24rem)]" />
+      {shootingStars.map((star) => {
+        const starStyle = {
+          top: star.top,
+          left: star.left,
+          width: star.width,
+          rotate: '-28deg',
+          willChange: shouldReduceMotion ? 'auto' : 'transform, opacity',
+        } satisfies CSSProperties
+
+        if (shouldReduceMotion) {
+          return (
+            <span
+              key={star.id}
+              className="shooting-star"
+              style={{
+                ...starStyle,
+                opacity: 0.18,
+                transform: 'translate3d(0, 0, 0)',
+              }}
+            />
+          )
+        }
+
+        return (
+          <motion.span
+            key={star.id}
+            className="shooting-star"
+            initial={{ x: 0, y: 0, opacity: 0, scaleX: 0.35 }}
+            animate={{
+              x: -star.travel,
+              y: star.travel * 0.44,
+              opacity: [0, 0.72, 0],
+              scaleX: [0.35, 1, 0.55],
+            }}
+            transition={{
+              delay: star.delay,
+              duration: star.duration,
+              ease: [0.16, 1, 0.3, 1],
+              repeat: Infinity,
+              repeatDelay: star.repeatDelay,
+            }}
+            style={starStyle}
+          />
+        )
+      })}
+    </div>
   )
 }
 
