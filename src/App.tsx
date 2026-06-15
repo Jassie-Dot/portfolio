@@ -15,7 +15,9 @@ import {
   ExternalLink,
   GitBranch,
   Mail,
+  Moon,
   Rocket,
+  Sun,
   Trophy,
   Zap,
 } from 'lucide-react'
@@ -38,6 +40,7 @@ type Project = {
   title: string
   description: string
   tags: string[]
+  href?: string
 }
 
 type Experience = {
@@ -54,7 +57,37 @@ type Hackathon = {
   description: string
 }
 
+type Theme = 'dark' | 'light'
+
 const projects: Project[] = [
+  {
+    title: 'Aurora Table Cafe',
+    description:
+      'A polished cafe website with a refined menu experience, atmospheric visuals, and smooth responsive browsing.',
+    tags: ['Cafe', 'Vercel', 'Responsive'],
+    href: 'https://aurora-table-cafe.vercel.app/',
+  },
+  {
+    title: 'Cafe Website',
+    description:
+      'A modern cafe landing experience built for quick exploration, clear sections, and clean food-service presentation.',
+    tags: ['Restaurant', 'Frontend', 'Vercel'],
+    href: 'https://cafe-website-alpha-seven.vercel.app/',
+  },
+  {
+    title: 'TR Enterprises',
+    description:
+      'A business website for presenting services, brand details, and customer contact paths through a direct web presence.',
+    tags: ['Business', 'Website', 'Vercel'],
+    href: 'https://tr-enterpriises.vercel.app/',
+  },
+  {
+    title: 'South Cafe Pizza',
+    description:
+      'A pizza cafe website focused on menu discovery, bold product presentation, and mobile-friendly browsing.',
+    tags: ['Food', 'Pizza', 'Responsive'],
+    href: 'https://south-cafe-pizza.vercel.app/',
+  },
   {
     title: 'Sentinel Pro AI',
     description:
@@ -180,6 +213,7 @@ const cardGlow = {
   hover: { opacity: 1 },
 }
 const tiltSpring = { stiffness: 260, damping: 30, mass: 0.45 }
+const themeStorageKey = 'portfolio-theme'
 
 type IdleWindow = Window &
   typeof globalThis & {
@@ -190,10 +224,18 @@ type IdleWindow = Window &
 function App() {
   const shouldReduceMotion = useReducedMotion()
   const transition = shouldReduceMotion ? instant : spring
+  const [theme, setTheme] = useState<Theme>(() => getInitialTheme())
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    document.documentElement.style.colorScheme = theme
+    window.localStorage.setItem(themeStorageKey, theme)
+  }, [theme])
 
   return (
     <>
       <ScrollProgress />
+      <ThemeToggle theme={theme} onToggle={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))} />
       <main className="min-h-screen w-full overflow-hidden bg-background text-foreground">
         <Hero transition={transition} shouldReduceMotion={Boolean(shouldReduceMotion)} />
 
@@ -281,6 +323,43 @@ function App() {
         <Contact />
       </main>
     </>
+  )
+}
+
+function getInitialTheme(): Theme {
+  if (typeof window === 'undefined') {
+    return 'dark'
+  }
+
+  const storedTheme = window.localStorage.getItem(themeStorageKey)
+
+  if (storedTheme === 'dark' || storedTheme === 'light') {
+    return storedTheme
+  }
+
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+}
+
+function ThemeToggle({ theme, onToggle }: { theme: Theme; onToggle: () => void }) {
+  const shouldReduceMotion = useReducedMotion()
+  const nextTheme = theme === 'dark' ? 'light' : 'dark'
+  const Icon = theme === 'dark' ? Sun : Moon
+
+  return (
+    <motion.button
+      type="button"
+      onClick={onToggle}
+      aria-label={`Switch to ${nextTheme} mode`}
+      title={`Switch to ${nextTheme} mode`}
+      whileHover={shouldReduceMotion ? undefined : { y: -2, scale: 1.05 }}
+      whileTap={shouldReduceMotion ? undefined : { scale: 0.95 }}
+      transition={snappySpring}
+      className="fixed right-4 top-4 z-[60] inline-flex h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-background/80 text-foreground shadow-lg shadow-black/10 backdrop-blur-xl transition hover:border-primary/60 hover:bg-muted"
+      style={{ willChange: shouldReduceMotion ? 'auto' : 'transform' }}
+    >
+      <Icon className="h-5 w-5" />
+      <span className="sr-only">Switch to {nextTheme} mode</span>
+    </motion.button>
   )
 }
 
@@ -607,6 +686,42 @@ function ProjectCard({ project }: { project: Project }) {
     tiltY.set(0)
   }, [tiltX, tiltY])
 
+  const card = (
+    <Card className="relative h-full overflow-hidden rounded-xl border-border/50 bg-background/50 p-6 shadow-sm backdrop-blur-xl transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-2xl group-hover:shadow-white/10">
+      <motion.div className="pointer-events-none absolute inset-0" variants={cardGlow} style={{ background: glowBackground }} />
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent"
+        variants={cardGlow}
+      />
+      <div className="relative z-10 space-y-4 [transform:translateZ(26px)]">
+        <div className="flex items-start justify-between">
+          <motion.div variants={cardGlow}>
+            <CodeXml className="h-8 w-8 text-primary" />
+          </motion.div>
+          {project.href ? (
+            <motion.div variants={{ rest: { x: 0, y: 0 }, hover: { x: 4, y: -4 } }} transition={snappySpring}>
+              <ExternalLink className="h-5 w-5 text-muted-foreground transition group-hover:text-primary" />
+            </motion.div>
+          ) : null}
+        </div>
+        <h3 className="text-xl font-semibold">{project.title}</h3>
+        <p className="leading-relaxed text-muted-foreground">{project.description}</p>
+        <div className="flex flex-wrap gap-2">
+          {project.tags.map((tag) => (
+            <motion.span
+              key={tag}
+              variants={{ rest: { y: 0 }, hover: { y: -2 } }}
+              transition={snappySpring}
+              className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary"
+            >
+              {tag}
+            </motion.span>
+          ))}
+        </div>
+      </div>
+    </Card>
+  )
+
   return (
     <motion.div
       className="group h-full [perspective:1000px]"
@@ -623,37 +738,19 @@ function ProjectCard({ project }: { project: Project }) {
       }}
       transition={snappySpring}
     >
-      <Card className="relative h-full overflow-hidden rounded-xl border-border/50 bg-background/50 p-6 shadow-sm backdrop-blur-xl transition-all duration-300 group-hover:border-primary/50 group-hover:shadow-2xl group-hover:shadow-white/10">
-        <motion.div className="pointer-events-none absolute inset-0" variants={cardGlow} style={{ background: glowBackground }} />
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent"
-          variants={cardGlow}
-        />
-        <div className="relative z-10 space-y-4 [transform:translateZ(26px)]">
-          <div className="flex items-start justify-between">
-            <motion.div variants={cardGlow}>
-              <CodeXml className="h-8 w-8 text-primary" />
-            </motion.div>
-            <motion.div variants={{ rest: { x: 0, y: 0 }, hover: { x: 4, y: -4 } }} transition={snappySpring}>
-              <ExternalLink className="h-5 w-5 text-muted-foreground transition group-hover:text-primary" />
-            </motion.div>
-          </div>
-          <h3 className="text-xl font-semibold">{project.title}</h3>
-          <p className="leading-relaxed text-muted-foreground">{project.description}</p>
-          <div className="flex flex-wrap gap-2">
-            {project.tags.map((tag) => (
-              <motion.span
-                key={tag}
-                variants={{ rest: { y: 0 }, hover: { y: -2 } }}
-                transition={snappySpring}
-                className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary"
-              >
-                {tag}
-              </motion.span>
-            ))}
-          </div>
-        </div>
-      </Card>
+      {project.href ? (
+        <a
+          href={project.href}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={`Open ${project.title}`}
+          className="block h-full rounded-xl focus-visible:outline-none"
+        >
+          {card}
+        </a>
+      ) : (
+        card
+      )}
     </motion.div>
   )
 }

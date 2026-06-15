@@ -29,6 +29,18 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+html[data-theme='light'] {
+  color-scheme: light;
+  --background: #f8fafc;
+  --foreground: #111827;
+  --primary: #111827;
+  --primary-foreground: #ffffff;
+  --muted: #e5e7eb;
+  --muted-foreground: #64748b;
+  --border: #cbd5e1;
+  --ring: #111827;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -47,6 +59,13 @@ body {
     radial-gradient(circle at 18% 8%, rgba(255, 255, 255, 0.08), transparent 28rem),
     radial-gradient(circle at 85% 12%, rgba(255, 255, 255, 0.05), transparent 26rem),
     linear-gradient(135deg, #020202 0%, #090909 48%, #050505 100%);
+}
+
+html[data-theme='light'] body {
+  background:
+    radial-gradient(circle at 18% 8%, rgba(59, 130, 246, 0.12), transparent 28rem),
+    radial-gradient(circle at 85% 12%, rgba(15, 23, 42, 0.08), transparent 26rem),
+    linear-gradient(135deg, #ffffff 0%, #f8fafc 48%, #eef2f7 100%);
 }
 
 button,
