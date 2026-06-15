@@ -16,9 +16,12 @@ import {
   ExternalLink,
   GitBranch,
   Mail,
+  Monitor,
   Moon,
+  Play,
   Rocket,
   Shuffle,
+  Smartphone,
   Sun,
   Trophy,
   Zap,
@@ -43,6 +46,7 @@ type Project = {
   description: string
   tags: string[]
   href?: string
+  embedPreview?: boolean
 }
 
 type Experience = {
@@ -66,6 +70,12 @@ type ThemeTransitionState = {
   from: Theme
 }
 
+type LivePreviewProject = Project & {
+  href: string
+}
+
+type LivePreviewMode = 'desktop' | 'mobile'
+
 const projects: Project[] = [
   {
     title: 'Aurora Table Cafe',
@@ -87,6 +97,7 @@ const projects: Project[] = [
       'A business website for presenting services, brand details, and customer contact paths through a direct web presence.',
     tags: ['Business', 'Website', 'Vercel'],
     href: 'https://tr-enterpriises.vercel.app/',
+    embedPreview: false,
   },
   {
     title: 'South Cafe Pizza',
@@ -102,6 +113,8 @@ const projects: Project[] = [
     tags: ['AI', 'Automation', 'Architecture'],
   },
 ]
+
+const livePreviewProjects = projects.filter(hasLivePreview)
 
 const skills = [
   'C++',
@@ -280,6 +293,14 @@ function App() {
         </Section>
 
         <Section
+          eyebrow="Live Builds"
+          title="Live Preview"
+          description="Interactive windows into deployed work, with quick project context and direct launch links."
+        >
+          <LiveProjectPreview transition={transition} />
+        </Section>
+
+        <Section
           eyebrow="Technical Expertise"
           title="Skills & Technologies"
           description="Comfortable across programming, frontend development, AI workflows, automation, and shipping tools."
@@ -357,6 +378,10 @@ function getInitialTheme(): Theme {
   }
 
   return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+}
+
+function hasLivePreview(project: Project): project is LivePreviewProject {
+  return Boolean(project.href)
 }
 
 function ThemeSwitchTransition({
@@ -881,6 +906,215 @@ function ProjectDeckCard({
   )
 }
 
+function LiveProjectPreview({ transition }: { transition: Transition }) {
+  const shouldReduceMotion = useReducedMotion()
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [previewMode, setPreviewMode] = useState<LivePreviewMode>('desktop')
+  const [loadedPreviewKey, setLoadedPreviewKey] = useState<string | null>(null)
+  const activeProject = livePreviewProjects[activeIndex] ?? livePreviewProjects[0]
+  const modeControls: Array<{
+    mode: LivePreviewMode
+    label: string
+    icon: ComponentType<{ className?: string }>
+  }> = [
+    { mode: 'desktop', label: 'Desktop preview', icon: Monitor },
+    { mode: 'mobile', label: 'Mobile preview', icon: Smartphone },
+  ]
+
+  if (!activeProject) {
+    return null
+  }
+
+  const previewKey = `${activeProject.href}-${previewMode}`
+  const canEmbedPreview = activeProject.embedPreview !== false
+  const isLoading = canEmbedPreview && loadedPreviewKey !== previewKey
+
+  return (
+    <motion.div
+      variants={container}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: '-80px' }}
+      className="grid gap-6 lg:grid-cols-[0.82fr_1.18fr] lg:items-start"
+    >
+      <motion.div variants={fadeUp} transition={transition}>
+        <Card className="rounded-2xl border-border/60 bg-background/70 p-5 shadow-xl shadow-black/10 backdrop-blur-xl md:p-6">
+          <div className="space-y-6">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+                <Play className="h-5 w-5" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold tracking-tight">{activeProject.title}</h3>
+                <p className="text-sm leading-6 text-muted-foreground">{activeProject.description}</p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {activeProject.tags.map((tag) => (
+                <span key={tag} className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Preview Project</p>
+              <div className="grid gap-2">
+                {livePreviewProjects.map((project, index) => {
+                  const isSelected = index === activeIndex
+
+                  return (
+                    <motion.button
+                      key={project.title}
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => setActiveIndex(index)}
+                      whileHover={shouldReduceMotion ? undefined : { x: 3 }}
+                      whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
+                      transition={shouldReduceMotion ? instant : snappySpring}
+                      className={`flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-sm font-medium transition ${
+                        isSelected
+                          ? 'border-primary bg-primary text-primary-foreground shadow-md'
+                          : 'border-border bg-muted/20 text-foreground hover:border-primary/50 hover:bg-primary/10'
+                      }`}
+                      style={{ willChange: shouldReduceMotion ? 'auto' : 'transform' }}
+                    >
+                      <span>{project.title}</span>
+                      <ExternalLink className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+                    </motion.button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              {canEmbedPreview ? (
+                <div className="inline-flex rounded-full border border-border bg-muted/30 p-1">
+                  {modeControls.map(({ mode, label, icon: Icon }) => {
+                    const isSelected = previewMode === mode
+
+                    return (
+                      <motion.button
+                        key={mode}
+                        type="button"
+                        aria-label={label}
+                        aria-pressed={isSelected}
+                        title={label}
+                        onClick={() => setPreviewMode(mode)}
+                        whileTap={shouldReduceMotion ? undefined : { scale: 0.94 }}
+                        transition={shouldReduceMotion ? instant : snappySpring}
+                        className={`inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full transition ${
+                          isSelected ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" aria-hidden="true" />
+                      </motion.button>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-muted/30 px-4 text-sm font-medium text-muted-foreground">
+                  <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                  External only
+                </div>
+              )}
+
+              <ButtonLink href={activeProject.href} variant="secondary" external>
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Open Site
+              </ButtonLink>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+
+      <motion.div variants={fadeUp} transition={transition} className="min-w-0">
+        <div
+          className={`relative mx-auto overflow-hidden border border-border/70 bg-background shadow-2xl shadow-black/25 backdrop-blur-xl ${
+            previewMode === 'desktop' ? 'h-[460px] w-full rounded-2xl lg:h-[520px]' : 'h-[620px] w-full max-w-[360px] rounded-[2rem]'
+          }`}
+        >
+          <div className="flex h-10 items-center justify-between border-b border-border/70 bg-muted/35 px-4">
+            <div className="flex items-center gap-2" aria-hidden="true">
+              <span className="h-2.5 w-2.5 rounded-full bg-primary/35" />
+              <span className="h-2.5 w-2.5 rounded-full bg-primary/25" />
+              <span className="h-2.5 w-2.5 rounded-full bg-primary/15" />
+            </div>
+            <p className="max-w-[62%] truncate text-xs font-medium text-muted-foreground">{activeProject.href}</p>
+            <Monitor className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+          </div>
+
+          <div className="relative h-[calc(100%-2.5rem)] bg-background">
+            <AnimatePresence mode="wait">
+              {canEmbedPreview ? (
+                <motion.iframe
+                  key={previewKey}
+                  title={`${activeProject.title} live preview`}
+                  src={activeProject.href}
+                  loading="lazy"
+                  sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+                  referrerPolicy="no-referrer"
+                  onLoad={() => setLoadedPreviewKey(previewKey)}
+                  className="h-full w-full border-0 bg-background"
+                  initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -12 }}
+                  transition={shouldReduceMotion ? instant : { duration: 0.28, ease: 'easeOut' }}
+                  style={{ willChange: shouldReduceMotion ? 'auto' : 'opacity, transform' }}
+                />
+              ) : (
+                <motion.div
+                  key={`external-${activeProject.href}`}
+                  className="flex h-full items-center justify-center bg-gradient-to-br from-muted/45 via-background to-background p-6 text-center"
+                  initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -12 }}
+                  transition={shouldReduceMotion ? instant : { duration: 0.28, ease: 'easeOut' }}
+                  style={{ willChange: shouldReduceMotion ? 'auto' : 'opacity, transform' }}
+                >
+                  <div className="mx-auto max-w-md space-y-5">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-xl">
+                      <ExternalLink className="h-7 w-7" aria-hidden="true" />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-2xl font-bold tracking-tight">Open {activeProject.title}</h3>
+                      <p className="text-sm leading-6 text-muted-foreground">
+                        This deployment uses security headers that keep it outside embedded frames.
+                      </p>
+                    </div>
+                    <ButtonLink href={activeProject.href} variant="primary" external>
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Open Live Site
+                    </ButtonLink>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+              {isLoading ? (
+                <motion.div
+                  className="absolute inset-0 flex items-center justify-center bg-background/85 backdrop-blur-md"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={shouldReduceMotion ? instant : { duration: 0.2 }}
+                >
+                  <div className="flex items-center gap-3 rounded-full border border-border bg-background/90 px-4 py-2 text-sm font-medium text-muted-foreground shadow-lg">
+                    <Play className="h-4 w-4 text-primary" aria-hidden="true" />
+                    Loading preview
+                  </div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+
 function Section({
   eyebrow,
   title,
@@ -896,10 +1130,13 @@ function Section({
 }) {
   const shouldReduceMotion = useReducedMotion()
   const transition = shouldReduceMotion ? instant : spring
+  const sectionId = title === 'Projects' ? 'projects' : title === 'Live Preview' ? 'live-preview' : undefined
+  const BadgeIcon =
+    title === 'Projects' ? Rocket : title === 'Live Preview' ? Monitor : title === 'Experience' ? Briefcase : title === 'Hackathon Wins' ? Trophy : CodeXml
 
   return (
     <section
-      id={title === 'Projects' ? 'projects' : undefined}
+      id={sectionId}
       className={`content-section px-6 py-24 ${muted ? 'bg-muted/30' : ''}`}
     >
       <div className="container mx-auto max-w-7xl">
@@ -910,9 +1147,7 @@ function Section({
           whileInView="visible"
           viewport={{ once: true, margin: '-100px' }}
         >
-          <Badge icon={title === 'Projects' ? Rocket : title === 'Experience' ? Briefcase : title === 'Hackathon Wins' ? Trophy : CodeXml}>
-            {eyebrow}
-          </Badge>
+          <Badge icon={BadgeIcon}>{eyebrow}</Badge>
           <motion.h2 variants={fadeUp} transition={transition} className="mt-4 text-4xl font-bold tracking-tight md:text-5xl">
             {title}
           </motion.h2>
