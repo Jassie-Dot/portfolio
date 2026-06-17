@@ -179,10 +179,17 @@ const hackathons: Hackathon[] = [
   },
 ]
 
+const whatsappNumber = '919781010283'
+const whatsappBaseUrl = `https://wa.me/${whatsappNumber}`
+const whatsappIntroHref = `${whatsappBaseUrl}?text=${encodeURIComponent(
+  'Hi Jaskaranveer, I saw your portfolio and would love to chat!'
+)}`
+const web3FormsAccessKey = '759c7d9e-a638-4f93-9277-c26499e40274'
+
 const socialLinks = [
   { label: 'GitHub', href: 'https://github.com/Jassie-Dot', icon: GitBranch },
   { label: 'Email', href: 'mailto:jassie.08191@gmail.com', icon: Mail },
-  { label: 'WhatsApp', href: 'https://wa.me/9781010283', icon: MessageCircle },
+  { label: 'WhatsApp', href: whatsappBaseUrl, icon: MessageCircle },
 ]
 
 const fadeUp = {
@@ -1134,7 +1141,7 @@ function LiveProjectPreview({ transition }: { transition: Transition }) {
 
                 {/* WhatsApp CTA */}
                 <motion.a
-                  href="https://wa.me/9781010283"
+                  href={whatsappBaseUrl}
                   target="_blank"
                   rel="noreferrer"
                   whileHover={shouldReduceMotion ? undefined : { y: -2, scale: 1.02 }}
@@ -1395,23 +1402,25 @@ function Contact() {
           Accept: 'application/json',
         },
         body: JSON.stringify({
-          // IMPORTANT: Replace this with your actual Web3Forms access key from https://web3forms.com/
-          access_key: '759c7d9e-a638-4f93-9277-c26499e40274',
-          name: formState.name,
-          email: formState.email,
-          subject: formState.subject,
-          message: formState.message,
+          access_key: web3FormsAccessKey,
+          name: formState.name.trim(),
+          email: formState.email.trim(),
+          replyto: formState.email.trim(),
+          subject: `Portfolio message: ${formState.subject}`,
+          project_type: formState.subject,
+          message: formState.message.trim(),
+          botcheck: false,
         }),
       })
-
       const result = await response.json()
-      if (result.success) {
-        setIsSubmitted(true)
-      } else {
-        setFormError(result.message || 'Something went wrong. Please try again.')
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Something went wrong. Please try again.')
       }
+
+      setIsSubmitted(true)
     } catch (error) {
-      setFormError('Network error. Please check your connection and try again.')
+      setFormError(error instanceof Error ? error.message : 'Message failed to send. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -1446,7 +1455,7 @@ function Contact() {
             <div className="space-y-6">
               {/* WhatsApp Card */}
               <motion.a
-                href="https://wa.me/9781010283?text=Hi%20Jaskaranveer,%20I%20saw%20your%20portfolio%20and%20would%20love%20to%20chat!"
+                href={whatsappIntroHref}
                 target="_blank"
                 rel="noreferrer"
                 whileHover={shouldReduceMotion ? undefined : { y: -4, scale: 1.01 }}
@@ -1553,7 +1562,7 @@ function Contact() {
                     <div className="space-y-4">
                       <h3 className="text-xl font-bold tracking-tight text-foreground">Send a Direct Message</h3>
                       <p className="text-sm text-muted-foreground">
-                        Fill in details below and I&apos;ll get back to you by email.
+                        Fill in details below and your message will come straight to my inbox.
                       </p>
 
                       {formError && (
