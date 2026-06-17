@@ -1,0 +1,174 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+}
+
+:root {
+  color-scheme: dark;
+  --background: #050505;
+  --foreground: #fafafa;
+  --primary: #ffffff;
+  --primary-foreground: #080808;
+  --muted: #151515;
+  --muted-foreground: #a3a3a3;
+  --border: #2a2a2a;
+  --ring: #ffffff;
+  --theme-toggle-glow: rgba(255, 255, 255, 0.18);
+  --shooting-star-color: rgba(255, 255, 255, 0.72);
+  --shooting-star-tail: rgba(255, 255, 255, 0.18);
+  --shooting-star-glow: rgba(255, 255, 255, 0.4);
+  --shooting-star-haze: rgba(255, 255, 255, 0.035);
+  font-family:
+    ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-synthesis: none;
+  letter-spacing: 0;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html[data-theme='light'] {
+  color-scheme: light;
+  --background: #f8fafc;
+  --foreground: #111827;
+  --primary: #111827;
+  --primary-foreground: #ffffff;
+  --muted: #e5e7eb;
+  --muted-foreground: #64748b;
+  --border: #cbd5e1;
+  --ring: #111827;
+  --theme-toggle-glow: rgba(17, 24, 39, 0.14);
+  --shooting-star-color: rgba(15, 23, 42, 0.38);
+  --shooting-star-tail: rgba(37, 99, 235, 0.16);
+  --shooting-star-glow: rgba(37, 99, 235, 0.2);
+  --shooting-star-haze: rgba(37, 99, 235, 0.07);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--background);
+}
+
+body {
+  min-width: 320px;
+  min-height: 100svh;
+  margin: 0;
+  color: var(--foreground);
+  background:
+    radial-gradient(circle at 18% 8%, rgba(255, 255, 255, 0.08), transparent 28rem),
+    radial-gradient(circle at 85% 12%, rgba(255, 255, 255, 0.05), transparent 26rem),
+    linear-gradient(135deg, #020202 0%, #090909 48%, #050505 100%);
+}
+
+html[data-theme='light'] body {
+  background:
+    radial-gradient(circle at 18% 8%, rgba(59, 130, 246, 0.12), transparent 28rem),
+    radial-gradient(circle at 85% 12%, rgba(15, 23, 42, 0.08), transparent 26rem),
+    linear-gradient(135deg, #ffffff 0%, #f8fafc 48%, #eef2f7 100%);
+}
+
+button,
+a {
+  letter-spacing: 0;
+}
+
+.theme-toggle {
+  --toggle-glow-x: 82%;
+  isolation: isolate;
+}
+
+.theme-toggle::before {
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: 9999px;
+  background: radial-gradient(circle at var(--toggle-glow-x) 50%, var(--theme-toggle-glow), transparent 58%);
+  content: "";
+}
+
+.theme-switch-reveal[data-reveal-theme='dark'] {
+  background: linear-gradient(135deg, #020202 0%, #090909 48%, #050505 100%);
+}
+
+.theme-switch-reveal[data-reveal-theme='light'] {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 48%, #eef2f7 100%);
+}
+
+.theme-transition-active *,
+.theme-transition-active body {
+  transition-duration: 260ms;
+  transition-property: background-color, border-color, box-shadow, color, fill, stroke, text-shadow;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.theme-transition-active .theme-switch-reveal {
+  transition: none;
+}
+
+.shooting-star {
+  position: absolute;
+  height: 1px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--shooting-star-color) 24%,
+    var(--shooting-star-tail) 62%,
+    transparent 100%
+  );
+  box-shadow: 0 0 16px var(--shooting-star-glow);
+  transform-origin: left center;
+}
+
+.shooting-star::after {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 3px;
+  width: 3px;
+  border-radius: 9999px;
+  background: var(--shooting-star-color);
+  box-shadow: 0 0 14px var(--shooting-star-glow);
+  content: "";
+  transform: translateY(-50%);
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 4px;
+}
+
+::selection {
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+@supports (content-visibility: auto) {
+  .content-section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 860px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
