@@ -112,10 +112,10 @@ const projects: Project[] = [
     href: 'https://south-cafe-pizza.vercel.app/',
   },
   {
-    title: 'Sentinel Pro AI',
+    title: 'Sentinel Pro Web',
     description:
-      'Self-evolving AI platform concept with modular plugin architecture, adaptability, automation, and intelligent decision-making.',
-    tags: ['AI', 'Automation', 'Architecture'],
+      'Self-evolving Web platform concept with modular plugin architecture, adaptability, automation, and intelligent decision-making.',
+    tags: ['Web', 'Automation', 'Architecture'],
   },
 ]
 
@@ -129,7 +129,7 @@ const skills = [
   'CSS3',
   'Responsive Design',
   'Frontend Development',
-  'AI Development',
+  'Web Development',
   'Prompt Engineering',
   'Plugin-Based Systems',
   'Automation Systems',
@@ -146,21 +146,21 @@ const experiences: Experience[] = [
     period: 'Current',
     org: 'Online clients and independent projects',
     description:
-      'Delivered technology solutions for clients through web development, AI solutions, digital projects, requirement gathering, and implementation.',
+      'Delivered technology solutions for clients through web development, Web solutions, digital projects, requirement gathering, and implementation.',
   },
   {
     title: 'B.Tech Information Technology',
     period: '2nd Year',
     org: 'Guru Nanak Dev Engineering College, Ludhiana',
     description:
-      'Building a strong foundation in software development, AI systems, web technologies, and practical engineering problem solving.',
+      'Building a strong foundation in software development, Web systems, web technologies, and practical engineering problem solving.',
   },
   {
-    title: 'AI Product Builder',
+    title: 'Web Product Builder',
     period: 'Ongoing',
-    org: 'Sentinel Pro AI and automation prototypes',
+    org: 'Sentinel Pro Web and automation prototypes',
     description:
-      'Designing practical AI tools, automation flows, assistant concepts, and user-facing experiments with a shipping mindset.',
+      'Designing practical Web tools, automation flows, assistant concepts, and user-facing experiments with a shipping mindset.',
   },
 ]
 
@@ -308,7 +308,7 @@ function App() {
           <Section
             eyebrow="Featured Work"
             title="Projects"
-            description="A selection of my recent work showcasing AI systems, web development, and real-world delivery."
+            description="A selection of my recent work showcasing Web systems, web development, and real-world delivery."
             muted
           >
             <ProjectShowcase transition={transition} />
@@ -325,7 +325,7 @@ function App() {
           <Section
             eyebrow="Technical Expertise"
             title="Skills & Technologies"
-            description="Comfortable across programming, frontend development, AI workflows, automation, and shipping tools."
+            description="Comfortable across programming, frontend development, Web workflows, automation, and shipping tools."
           >
             <motion.div
               variants={container}
@@ -713,10 +713,10 @@ function Hero({
                 </motion.span>
               </motion.h1>
               <motion.p variants={fadeUp} transition={transition} className="text-xl font-light text-muted-foreground sm:text-2xl md:text-3xl">
-                AI Developer & Creative Technologist
+                Web Developer & Creative Technologist
               </motion.p>
               <motion.p variants={fadeUp} transition={transition} className="max-w-xl text-lg leading-relaxed text-muted-foreground">
-                B.Tech Information Technology student, freelancer, and AI builder crafting practical
+                B.Tech Information Technology student, freelancer, and Web builder crafting practical
                 digital experiences with modern web technologies and intelligent automation.
               </motion.p>
             </motion.div>
@@ -765,7 +765,7 @@ function Hero({
             <div className="absolute inset-4 rounded-3xl bg-gradient-to-br from-primary/20 to-transparent blur-3xl lg:inset-0" />
             <div
               role="img"
-              aria-label="Interactive AI robot scene"
+              aria-label="Interactive Web robot scene"
               className="relative h-full overflow-hidden rounded-3xl border border-border/70 bg-background/60 shadow-2xl shadow-black/40 backdrop-blur-xl lg:shadow-black/60"
             >
               {canLoadSpline ? (
