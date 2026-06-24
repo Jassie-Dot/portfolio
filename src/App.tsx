@@ -1013,8 +1013,8 @@ function LiveProjectPreview({ transition }: { transition: Transition }) {
   return (
     <div className="relative isolate w-full">
       {/* Ambient glowing orbs for Live Preview section */}
-      <div className="pointer-events-none absolute -left-32 -top-32 h-[30rem] w-[30rem] rounded-full bg-primary/10 blur-[120px]" />
-      <div className="pointer-events-none absolute -right-32 -bottom-32 h-[30rem] w-[30rem] rounded-full bg-violet-500/10 blur-[120px]" />
+      <div className="pointer-events-none absolute -left-32 -top-32 h-[30rem] w-[30rem] rounded-full bg-primary/10 blur-3xl" />
+      <div className="pointer-events-none absolute -right-32 -bottom-32 h-[30rem] w-[30rem] rounded-full bg-violet-500/10 blur-3xl" />
 
       <motion.div
         variants={container}
@@ -1026,7 +1026,7 @@ function LiveProjectPreview({ transition }: { transition: Transition }) {
         {/* Info Panel */}
         <motion.div variants={fadeUp} transition={transition}>
           <div className="live-preview-panel rounded-3xl p-[1px] bg-gradient-to-b from-primary/20 via-primary/5 to-transparent shadow-xl">
-            <Card className="rounded-3xl border border-border/50 bg-background/60 p-0 shadow-2xl shadow-primary/5 backdrop-blur-2xl">
+            <Card className="rounded-3xl border border-border/50 bg-background/60 p-0 shadow-2xl shadow-primary/5 backdrop-blur-xl">
             <div className="p-5 md:p-6">
               <div className="space-y-6">
                 {/* Project Header */}
@@ -1163,7 +1163,7 @@ function LiveProjectPreview({ transition }: { transition: Transition }) {
       <motion.div variants={fadeUp} transition={transition} className="min-w-0">
         <div className="live-preview-browser-wrap rounded-[22px] p-[1px] bg-gradient-to-br from-primary/30 via-border/10 to-border/30 shadow-2xl">
           <div
-            className={`relative mx-auto overflow-hidden bg-background/95 backdrop-blur-3xl shadow-[0_0_40px_rgba(0,0,0,0.3)] ${
+            className={`relative mx-auto overflow-hidden bg-background/95 backdrop-blur-xl shadow-[0_0_40px_rgba(0,0,0,0.3)] ${
               previewMode === 'desktop' ? 'h-[460px] w-full rounded-[20px] lg:h-[520px]' : 'h-[620px] w-full max-w-[360px] rounded-[2rem]'
             }`}
           >
@@ -1429,8 +1429,8 @@ function Contact() {
   return (
     <section className="content-section bg-gradient-to-br from-primary/5 via-background to-background px-6 py-24 relative overflow-hidden">
       {/* Background glowing blur elements */}
-      <div className="pointer-events-none absolute -bottom-36 -right-36 h-96 w-96 rounded-full bg-[#25D366]/5 blur-[128px]" />
-      <div className="pointer-events-none absolute -top-36 -left-36 h-96 w-96 rounded-full bg-primary/5 blur-[128px]" />
+      <div className="pointer-events-none absolute -bottom-36 -right-36 h-96 w-96 rounded-full bg-[#25D366]/5 blur-3xl" />
+      <div className="pointer-events-none absolute -top-36 -left-36 h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
 
       <motion.div
         className="container mx-auto max-w-6xl relative z-10"
@@ -1785,7 +1785,7 @@ function HeroSpotlight() {
         <filter id="filter" x="0.860352" y="0.838989" width="3785.16" height="2840.26" filterUnits="userSpaceOnUse">
           <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
-          <feGaussianBlur stdDeviation="151" result="effect1_foregroundBlur_1065_8" />
+          <feGaussianBlur stdDeviation="48" result="effect1_foregroundBlur_1065_8" />
         </filter>
       </defs>
     </svg>
