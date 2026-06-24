@@ -184,7 +184,7 @@ const whatsappBaseUrl = `https://wa.me/${whatsappNumber}`
 const whatsappIntroHref = `${whatsappBaseUrl}?text=${encodeURIComponent(
   'Hi Jaskaranveer, I saw your portfolio and would love to chat!'
 )}`
-const web3FormsAccessKey = '759c7d9e-a638-4f93-9277-c26499e40274'
+const web3FormsAccessKey = '82bc0703-3909-40e0-861a-74775f9fa852'
 
 const socialLinks = [
   { label: 'GitHub', href: 'https://github.com/Jassie-Dot', icon: GitBranch },
