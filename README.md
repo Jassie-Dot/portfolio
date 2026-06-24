@@ -118,7 +118,7 @@ Install Command: npm install
 ## Contact
 
 - GitHub: [Jassie-Dot](https://github.com/Jassie-Dot)
-- Email: [jassie.08191@gmail.com](mailto:jassie.08191@gmail.com)
+- Email: [jassie.0891@gmail.com](mailto:jassie.08191@gmail.com)
 
 ## License
 
