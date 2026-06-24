@@ -188,7 +188,7 @@ const web3FormsAccessKey = '82bc0703-3909-40e0-861a-74775f9fa852'
 
 const socialLinks = [
   { label: 'GitHub', href: 'https://github.com/Jassie-Dot', icon: GitBranch },
-  { label: 'Email', href: 'mailto:jassie.08191@gmail.com', icon: Mail },
+  { label: 'Email', href: 'mailto:jassie.0891@gmail.com', icon: Mail },
   { label: 'WhatsApp', href: whatsappBaseUrl, icon: MessageCircle },
 ]
 
@@ -726,7 +726,7 @@ function Hero({
                 View Projects
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </ButtonLink>
-              <ButtonLink href="mailto:jassie.08191@gmail.com" variant="secondary">
+              <ButtonLink href="mailto:jassie.0891@gmail.com" variant="secondary">
                 <Mail className="mr-2 h-4 w-4" />
                 Contact Me
               </ButtonLink>
@@ -1487,7 +1487,7 @@ function Contact() {
 
               {/* Email Card */}
               <motion.a
-                href="mailto:jassie.08191@gmail.com"
+                href="mailto:jassie.0891@gmail.com"
                 whileHover={shouldReduceMotion ? undefined : { y: -4, scale: 1.01 }}
                 transition={{ duration: 0.2 }}
                 className="group block relative rounded-2xl border border-border/60 bg-muted/20 p-6 shadow-sm backdrop-blur-xl transition hover:border-primary/40 hover:bg-primary/5"
@@ -1499,7 +1499,7 @@ function Contact() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground group-hover:text-primary transition">Email Address</h3>
-                      <p className="text-sm text-muted-foreground">jassie.08191@gmail.com</p>
+                      <p className="text-sm text-muted-foreground">jassie.0891@gmail.com</p>
                     </div>
                   </div>
                 </div>
