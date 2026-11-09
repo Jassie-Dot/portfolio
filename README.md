@@ -22,6 +22,7 @@ A modern personal portfolio for Jaskaranveer Singh, an Information Technology st
 | Cafe Website | Modern cafe landing experience with clear sections and responsive browsing. | [Open project](https://cafe-website-alpha-seven.vercel.app/) |
 | TR Enterprises | Business website for services, brand details, and customer contact paths. | [Open project](https://tr-enterpriises.vercel.app/) |
 | South Cafe Pizza | Pizza cafe website focused on menu discovery and mobile-friendly presentation. | [Open project](https://south-cafe-pizza.vercel.app/) |
+| Pinkfarm | Website project presenting the Pinkfarm brand and its offerings. | [Open project](https://pinkfarm.in/) |
 | Sentinel Pro AI | AI platform concept with modular plugin architecture and automation thinking. | Portfolio showcase |
 
 ## Tech Stack
@@ -118,7 +119,7 @@ Install Command: npm install
 ## Contact
 
 - GitHub: [Jassie-Dot](https://github.com/Jassie-Dot)
-- Email: [jassie.0891@gmail.com](mailto:jassie.08191@gmail.com)
+- Email: [jassie.0891@gmail.com](mailto:jassie.0891@gmail.com)
 
 ## License
 

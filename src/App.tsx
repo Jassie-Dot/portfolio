@@ -37,7 +37,6 @@ import {
   useReducedMotion,
   useScroll,
   useSpring,
-  useTransform,
   type Transition,
 } from 'motion/react'
 
@@ -110,6 +109,14 @@ const projects: Project[] = [
       'A pizza cafe website focused on menu discovery, bold product presentation, and mobile-friendly browsing.',
     tags: ['Food', 'Pizza', 'Responsive'],
     href: 'https://south-cafe-pizza.vercel.app/',
+  },
+  {
+    title: 'Pinkfarm',
+    description:
+      'A website project for Pinkfarm, presenting the brand and its offerings through a polished live web experience.',
+    tags: ['Website', 'Brand', 'Live'],
+    href: 'https://pinkfarm.in/',
+    embedPreview: false,
   },
   {
     title: 'Sentinel Pro Web',
@@ -583,13 +590,15 @@ function ShootingStars() {
   )
 }
 
-function useResponsiveSplineReady() {
+function useResponsiveSplineReady(enabled: boolean, targetRef: React.RefObject<HTMLElement | null>) {
   const [isReady, setIsReady] = useState(false)
 
   useEffect(() => {
     const win = window as IdleWindow
     let timer: number | undefined
     let idleId: number | undefined
+    let isNearViewport = false
+    const desktopQuery = window.matchMedia('(min-width: 1024px)')
 
     const cancelPending = () => {
       window.clearTimeout(timer)
@@ -602,6 +611,11 @@ function useResponsiveSplineReady() {
 
     const schedule = () => {
       cancelPending()
+      setIsReady(false)
+
+      if (!enabled || !desktopQuery.matches || !isNearViewport) {
+        return
+      }
 
       const revealSpline = () => {
         idleId = undefined
@@ -616,12 +630,25 @@ function useResponsiveSplineReady() {
       timer = window.setTimeout(revealSpline, 450)
     }
 
-    schedule()
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isNearViewport = entry.isIntersecting
+        schedule()
+      },
+      { rootMargin: '120px' },
+    )
+
+    if (targetRef.current) {
+      observer.observe(targetRef.current)
+    }
+    desktopQuery.addEventListener('change', schedule)
 
     return () => {
+      observer.disconnect()
+      desktopQuery.removeEventListener('change', schedule)
       cancelPending()
     }
-  }, [])
+  }, [enabled, targetRef])
 
   return isReady
 }
@@ -661,11 +688,8 @@ function Hero({
   shouldReduceMotion: boolean
 }) {
   const heroRef = useRef<HTMLElement>(null)
-  const canLoadSpline = useResponsiveSplineReady()
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
-  const textY = useTransform(scrollYProgress, [0, 1], [0, shouldReduceMotion ? 0 : -76])
-  const visualY = useTransform(scrollYProgress, [0, 1], [0, shouldReduceMotion ? 0 : 110])
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.78], [1, shouldReduceMotion ? 1 : 0.38])
+  const heroVisualRef = useRef<HTMLDivElement>(null)
+  const canLoadSpline = useResponsiveSplineReady(!shouldReduceMotion, heroVisualRef)
 
   return (
     <section
@@ -693,7 +717,6 @@ function Hero({
             initial="hidden"
             animate="visible"
             className="order-2 space-y-6 lg:order-1 lg:space-y-8"
-            style={{ y: textY, opacity: heroOpacity, willChange: 'transform, opacity' }}
           >
             <motion.div variants={fadeUp} transition={transition}>
               <Badge icon={Zap}>Available for Opportunities</Badge>
@@ -759,11 +782,11 @@ function Hero({
             animate={shouldReduceMotion ? undefined : { opacity: 1, scale: 1, rotateY: 0 }}
             transition={transition}
             className="order-1 relative h-[250px] sm:h-[340px] lg:order-2 lg:h-[600px]"
-            style={{ y: visualY, willChange: 'transform, opacity' }}
             whileHover={shouldReduceMotion ? undefined : { scale: 1.015, rotateX: 1.5, rotateY: -1.5 }}
           >
             <div className="absolute inset-4 rounded-3xl bg-gradient-to-br from-primary/20 to-transparent blur-3xl lg:inset-0" />
             <div
+              ref={heroVisualRef}
               role="img"
               aria-label="Interactive Web robot scene"
               className="relative h-full overflow-hidden rounded-3xl border border-border/70 bg-background/60 shadow-2xl shadow-black/40 backdrop-blur-xl lg:shadow-black/60"
@@ -785,17 +808,24 @@ function Hero({
 }
 
 function ProjectShowcase({ transition }: { transition: Transition }) {
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches,
+  )
+
+  useEffect(() => {
+    const query = window.matchMedia('(min-width: 1024px)')
+    const updateViewport = () => setIsDesktop(query.matches)
+
+    query.addEventListener('change', updateViewport)
+    return () => query.removeEventListener('change', updateViewport)
+  }, [])
+
   return (
-    <>
-      <div className="lg:hidden">
-        <ProjectShuffleDeck variant="mobile" transition={transition} />
-      </div>
-      <motion.div variants={container} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} className="hidden lg:block">
-        <motion.div variants={fadeUp} transition={transition}>
-          <ProjectShuffleDeck variant="desktop" transition={transition} />
-        </motion.div>
+    <motion.div variants={container} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }}>
+      <motion.div variants={fadeUp} transition={transition}>
+        <ProjectShuffleDeck variant={isDesktop ? 'desktop' : 'mobile'} transition={transition} />
       </motion.div>
-    </>
+    </motion.div>
   )
 }
 
@@ -991,6 +1021,7 @@ function LiveProjectPreview({ transition }: { transition: Transition }) {
   const shouldReduceMotion = useReducedMotion()
   const [activeIndex, setActiveIndex] = useState(0)
   const [previewMode, setPreviewMode] = useState<LivePreviewMode>('desktop')
+  const [requestedPreviewKey, setRequestedPreviewKey] = useState<string | null>(null)
   const [loadedPreviewKey, setLoadedPreviewKey] = useState<string | null>(null)
   const activeProject = livePreviewProjects[activeIndex] ?? livePreviewProjects[0]
   const modeControls: Array<{
@@ -1008,7 +1039,8 @@ function LiveProjectPreview({ transition }: { transition: Transition }) {
 
   const previewKey = `${activeProject.href}-${previewMode}`
   const canEmbedPreview = activeProject.embedPreview !== false
-  const isLoading = canEmbedPreview && loadedPreviewKey !== previewKey
+  const isPreviewRequested = requestedPreviewKey === previewKey
+  const isLoading = canEmbedPreview && isPreviewRequested && loadedPreviewKey !== previewKey
 
   return (
     <div className="relative isolate w-full">
@@ -1184,7 +1216,7 @@ function LiveProjectPreview({ transition }: { transition: Transition }) {
             {/* Preview Content */}
             <div className="relative h-[calc(100%-2.75rem)] bg-background">
               <AnimatePresence mode="wait">
-                {canEmbedPreview ? (
+                {canEmbedPreview && isPreviewRequested ? (
                   <motion.iframe
                     key={previewKey}
                     title={`${activeProject.title} live preview`}
@@ -1200,6 +1232,38 @@ function LiveProjectPreview({ transition }: { transition: Transition }) {
                     transition={shouldReduceMotion ? instant : { duration: 0.28, ease: 'easeOut' }}
                     style={{ willChange: shouldReduceMotion ? 'auto' : 'opacity, transform' }}
                   />
+                ) : canEmbedPreview ? (
+                  <motion.div
+                    key={`load-${previewKey}`}
+                    className="flex h-full items-center justify-center bg-gradient-to-br from-muted/30 via-background to-background p-6 text-center"
+                    initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -12 }}
+                    transition={shouldReduceMotion ? instant : { duration: 0.28, ease: 'easeOut' }}
+                  >
+                    <div className="mx-auto max-w-md space-y-4">
+                      <Monitor className="mx-auto h-8 w-8 text-muted-foreground" aria-hidden="true" />
+                      <div className="space-y-2">
+                        <h3 className="text-xl font-bold tracking-tight">Preview {activeProject.title}</h3>
+                        <p className="text-sm leading-6 text-muted-foreground">
+                          Load the live site here, or open it directly in a new tab.
+                        </p>
+                      </div>
+                      <ButtonLink href={activeProject.href} variant="secondary" external>
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Open Live Site
+                      </ButtonLink>
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => setRequestedPreviewKey(previewKey)}
+                          className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
+                        >
+                          Load embedded preview
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
                 ) : (
                   <motion.div
                     key={`external-${activeProject.href}`}
