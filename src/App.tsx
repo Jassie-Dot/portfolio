@@ -119,6 +119,13 @@ const projects: Project[] = [
     embedPreview: false,
   },
   {
+    title: 'Productive X',
+    description:
+      'A productivity-focused web project built to help make everyday digital work more productive.',
+    tags: ['Productivity', 'Web App', 'Vercel'],
+    href: 'https://productive-x-theta.vercel.app/',
+  },
+  {
     title: 'Sentinel Pro Web',
     description:
       'Self-evolving Web platform concept with modular plugin architecture, adaptability, automation, and intelligent decision-making.',
@@ -261,6 +268,7 @@ type IdleWindow = Window &
 
 function App() {
   const shouldReduceMotion = useReducedMotion()
+  const isMobileViewport = useMobileViewport()
   const transition = shouldReduceMotion ? instant : spring
   const [theme, setTheme] = useState<Theme>(() => getInitialTheme())
   const [themeTransition, setThemeTransition] = useState<ThemeTransitionState | null>(null)
@@ -315,11 +323,15 @@ function App() {
     <>
       <ScrollProgress />
       <ThemeSwitchTransition transitionState={themeTransition} onComplete={handleThemeTransitionComplete} />
-      <ThemeToggle theme={theme} onToggle={handleThemeToggle} />
       <main className="relative isolate min-h-screen w-full overflow-hidden bg-background text-foreground">
-        <ShootingStars />
+        <ThemeToggle theme={theme} onToggle={handleThemeToggle} />
+        <ShootingStars isMobileViewport={isMobileViewport} />
         <div className="relative z-10">
-          <Hero transition={transition} shouldReduceMotion={Boolean(shouldReduceMotion)} />
+          <Hero
+            transition={transition}
+            shouldReduceMotion={Boolean(shouldReduceMotion)}
+            isMobileViewport={isMobileViewport}
+          />
 
           <Section
             eyebrow="Featured Work"
@@ -405,6 +417,22 @@ function App() {
   )
 }
 
+function useMobileViewport() {
+  const [isMobileViewport, setIsMobileViewport] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches,
+  )
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 639px)')
+    const updateViewport = () => setIsMobileViewport(mediaQuery.matches)
+
+    mediaQuery.addEventListener('change', updateViewport)
+    return () => mediaQuery.removeEventListener('change', updateViewport)
+  }, [])
+
+  return isMobileViewport
+}
+
 function getInitialTheme(): Theme {
   if (typeof window === 'undefined') {
     return 'dark'
@@ -475,7 +503,7 @@ function ThemeToggle({ theme, onToggle }: { theme: Theme; onToggle: () => void }
       whileHover={shouldReduceMotion ? undefined : { y: -2, scale: 1.03 }}
       whileTap={shouldReduceMotion ? undefined : { scale: 0.97 }}
       transition={shouldReduceMotion ? instant : snappySpring}
-      className="theme-toggle fixed right-4 top-4 z-[60] inline-flex h-11 w-20 cursor-pointer items-center rounded-full border border-border/70 bg-background/80 p-1 text-foreground shadow-lg shadow-black/10 backdrop-blur-xl transition hover:border-primary/60"
+      className="theme-toggle absolute right-4 top-4 z-[60] inline-flex h-11 w-20 cursor-pointer items-center rounded-full border border-border/70 bg-background/80 p-1 text-foreground shadow-lg shadow-black/10 backdrop-blur-xl transition hover:border-primary/60 sm:fixed"
       style={{ willChange: shouldReduceMotion ? 'auto' : 'transform' }}
     >
       <span className="pointer-events-none absolute inset-1 rounded-full bg-muted/50" />
@@ -541,8 +569,9 @@ function ScrollProgress() {
   )
 }
 
-function ShootingStars() {
+function ShootingStars({ isMobileViewport }: { isMobileViewport: boolean }) {
   const shouldReduceMotion = useReducedMotion()
+  const visibleStars = isMobileViewport ? shootingStars.slice(0, 2) : shootingStars
 
   return (
     <div
@@ -550,7 +579,7 @@ function ShootingStars() {
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden opacity-80"
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_12%,var(--shooting-star-haze),transparent_24rem)]" />
-      {shootingStars.map((star) => {
+      {visibleStars.map((star) => {
         const starStyle = {
           top: star.top,
           left: star.left,
@@ -607,8 +636,6 @@ function useResponsiveSplineReady(enabled: boolean, targetRef: React.RefObject<H
     let timer: number | undefined
     let idleId: number | undefined
     let isNearViewport = false
-    const desktopQuery = window.matchMedia('(min-width: 1024px)')
-
     const cancelPending = () => {
       window.clearTimeout(timer)
 
@@ -622,7 +649,7 @@ function useResponsiveSplineReady(enabled: boolean, targetRef: React.RefObject<H
       cancelPending()
       setIsReady(false)
 
-      if (!enabled || !desktopQuery.matches || !isNearViewport) {
+      if (!enabled || !isNearViewport) {
         return
       }
 
@@ -650,11 +677,8 @@ function useResponsiveSplineReady(enabled: boolean, targetRef: React.RefObject<H
     if (targetRef.current) {
       observer.observe(targetRef.current)
     }
-    desktopQuery.addEventListener('change', schedule)
-
     return () => {
       observer.disconnect()
-      desktopQuery.removeEventListener('change', schedule)
       cancelPending()
     }
   }, [enabled, targetRef])
@@ -692,9 +716,11 @@ function SplinePlaceholder() {
 function Hero({
   transition,
   shouldReduceMotion,
+  isMobileViewport,
 }: {
   transition: Transition
   shouldReduceMotion: boolean
+  isMobileViewport: boolean
 }) {
   const heroRef = useRef<HTMLElement>(null)
   const heroVisualRef = useRef<HTMLDivElement>(null)
@@ -709,12 +735,12 @@ function Hero({
       <div className="pointer-events-none absolute inset-0 opacity-30">
         <motion.div
           className="absolute left-1/4 top-1/4 h-96 w-96 rounded-full bg-primary/20 blur-3xl"
-          animate={shouldReduceMotion ? undefined : { scale: [1, 1.07, 1], opacity: [0.2, 0.34, 0.2] }}
+          animate={shouldReduceMotion || isMobileViewport ? undefined : { scale: [1, 1.07, 1], opacity: [0.2, 0.34, 0.2] }}
           transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
           className="absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-primary/10 blur-3xl"
-          animate={shouldReduceMotion ? undefined : { scale: [1, 1.12, 1], opacity: [0.16, 0.3, 0.16] }}
+          animate={shouldReduceMotion || isMobileViewport ? undefined : { scale: [1, 1.12, 1], opacity: [0.16, 0.3, 0.16] }}
           transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
         />
       </div>

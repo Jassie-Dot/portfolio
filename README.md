@@ -23,6 +23,7 @@ A modern personal portfolio for Jaskaranveer Singh, an Information Technology st
 | TR Enterprises | Business website for services, brand details, and customer contact paths. | [Open project](https://tr-enterpriises.vercel.app/) |
 | South Cafe Pizza | Pizza cafe website focused on menu discovery and mobile-friendly presentation. | [Open project](https://south-cafe-pizza.vercel.app/) |
 | Pinkfarm | Website project presenting the Pinkfarm brand and its offerings. | [Open project](https://pinkfarm.in/) |
+| Productive X | Productivity-focused web project for everyday digital work. | [Open project](https://productive-x-theta.vercel.app/) |
 | Sentinel Pro AI | AI platform concept with modular plugin architecture and automation thinking. | Portfolio showcase |
 
 ## Tech Stack
